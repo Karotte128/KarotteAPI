@@ -1,0 +1,5 @@
+[server]
+address = "${ADDR:-:8080}"
+
+[modules.status]
+enable = true
