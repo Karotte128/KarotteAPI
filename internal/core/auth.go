@@ -3,36 +3,31 @@ package core
 import (
 	"context"
 	"slices"
+
+	"github.com/karotte128/karotteapi/apitypes"
 )
 
 type authContextKey struct{}
 
-type AuthInfo struct {
-	ApiKey      string
-	Permissions []string
-}
+var permissionProvider apitypes.PermissionProvider = nil
 
-type PermissionProvider func(key string) []string
-
-var permissionProvider PermissionProvider = nil
-
-func SetAuthInfo(ctx context.Context, info *AuthInfo) context.Context {
+func SetAuthInfo(ctx context.Context, info *apitypes.AuthInfo) context.Context {
 	return context.WithValue(ctx, authContextKey{}, info)
 }
 
-func GetAuthInfo(ctx context.Context) *AuthInfo {
-	return ctx.Value(authContextKey{}).(*AuthInfo)
+func GetAuthInfo(ctx context.Context) *apitypes.AuthInfo {
+	return ctx.Value(authContextKey{}).(*apitypes.AuthInfo)
 }
 
-func HasPermission(info AuthInfo, perm string) bool {
+func HasPermission(info apitypes.AuthInfo, perm string) bool {
 	contains := slices.Contains(info.Permissions, perm)
 	return contains
 }
 
-func SetPermissionProvider(provider PermissionProvider) {
+func SetPermissionProvider(provider apitypes.PermissionProvider) {
 	permissionProvider = provider
 }
 
-func GetPermissionProvider() PermissionProvider {
+func GetPermissionProvider() apitypes.PermissionProvider {
 	return permissionProvider
 }

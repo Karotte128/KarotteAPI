@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/karotte128/karotteapi/apitypes"
 	"github.com/karotte128/karotteapi/internal/core"
 )
 
@@ -11,7 +12,7 @@ import (
 // If a module panics, the panic is caught here so the server remains alive.
 // The user receives a 500 error and the panic is logged.
 
-var RecoveryMiddleware = core.Middleware{
+var RecoveryMiddleware = apitypes.Middleware{
 	Name:     "recovery",
 	Handler:  RecoveryHandler,
 	Priority: 0,

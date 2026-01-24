@@ -4,10 +4,11 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/karotte128/karotteapi/apitypes"
 	"github.com/karotte128/karotteapi/internal/core"
 )
 
-var LoggingMiddleware = core.Middleware{
+var LoggingMiddleware = apitypes.Middleware{
 	Name:     "logging",
 	Handler:  LoggingHandler,
 	Priority: 1,

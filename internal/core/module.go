@@ -3,6 +3,8 @@ package core
 import (
 	"log"
 	"net/http"
+
+	"github.com/karotte128/karotteapi/apitypes"
 )
 
 // A module is a component handles requests to an API endpoint.
@@ -13,29 +15,9 @@ import (
 // - a set of routes served by an http.NewServeMux()
 // - a startup function (optional)
 // - a shutdown function (optional)
-//
+
 // Modules register themselves automatically via init() inside their
 // own package. The core does not need to know about them explicitly.
-type Module struct {
-	// Name is the name of the module. It is used for logging.
-	Name string
-
-	// Routes returns a URL prefix and an http.Handler that serves all routes
-	// for this module.
-	//
-	// Example:
-	//   prefix = "/example/"
-	//   handler = http.HandlerFunc()
-	Routes func() (prefix string, handler http.Handler)
-
-	// Startup is a function that is run on startup.
-	// This can be used to initialize a connection to external services like databases.
-	Startup func() error
-
-	// Shutdown is a function that is run on shutdown.
-	// This can be used to cleanly disconnect from services connected during Startup().
-	Shutdown func() error
-}
 
 // This is the module status type.
 type status int
@@ -52,7 +34,7 @@ const (
 // It is not public to the modules or the main package. It is only for use in core.
 type registryModule struct {
 	// module contains the data provided by the registering module
-	module Module
+	module apitypes.Module
 
 	// status is the current status of the module.
 	status status
@@ -63,9 +45,9 @@ var module_registry []registryModule
 
 // RegisterModule adds a module to the global registry.
 // Typically called from an init() function inside each module package.
-func RegisterModule(module Module) {
+func RegisterModule(module apitypes.Module) {
 	// Structured data for the module registry
-	var reg_mod = registryModule {
+	var reg_mod = registryModule{
 		module: module,
 		status: statusRegistered,
 	}
@@ -85,7 +67,7 @@ func LoadRegisteredModules(mux *http.ServeMux) {
 		// get enable value from config
 		config, okConfig := GetModuleConfig(reg_mod.module.Name)
 		if okConfig {
-			enable_conf, okEnable := GetNestedValue[bool](config, "enable")	
+			enable_conf, okEnable := GetNestedValue[bool](config, "enable")
 			if okEnable {
 				enabled = enable_conf
 			} else {
@@ -131,7 +113,7 @@ func LoadRegisteredModules(mux *http.ServeMux) {
 			log.Printf("[MODULE] %s is disabled.", reg_mod.module.Name)
 
 			// Set module status to disabled
-			modStatus= statusDisabled
+			modStatus = statusDisabled
 		}
 
 		module_registry[i].status = modStatus
@@ -149,7 +131,7 @@ func ShutdownRegisteredModules() {
 
 // safeShutdownModule is a function that attempts to execute the shutdown function of a module.
 // It makes sure that a panic in the shutdown function does not crash the server.
-func safeShutdownModule(module Module) {
+func safeShutdownModule(module apitypes.Module) {
 	// only execute if the module implements a shutdown function
 	if module.Shutdown != nil {
 		// recover from panic
@@ -171,7 +153,7 @@ func safeShutdownModule(module Module) {
 // safeStartModule is a function that attempts to execute the startup function of a module.
 // It returns true if the startup is successfull or the module does not provide a startup function.
 // It makes sure that a panic in the startup function does not crash the server.
-func safeStartModule(module Module) bool {
+func safeStartModule(module apitypes.Module) bool {
 	var ok bool = true
 
 	// only execute if the module implements a startup function
@@ -201,11 +183,11 @@ func safeStartModule(module Module) bool {
 }
 
 type ModuleStatus struct {
-	TotalModules int
+	TotalModules      int
 	RegisteredModules int
-	RunningModules int
-	DisabledModules int
-	FailedModules int
+	RunningModules    int
+	DisabledModules   int
+	FailedModules     int
 }
 
 func GetModuleStatus() ModuleStatus {
@@ -220,25 +202,25 @@ func GetModuleStatus() ModuleStatus {
 		total++
 
 		switch module.status {
-			case statusRegistered:
-				registered++
+		case statusRegistered:
+			registered++
 
-			case statusRunning:
-				running++
+		case statusRunning:
+			running++
 
-			case statusDisabled:
-				disabled++
+		case statusDisabled:
+			disabled++
 
-			case statusFailed:
-				failed++
+		case statusFailed:
+			failed++
 		}
 	}
 
-	return ModuleStatus {
-		TotalModules: total,
+	return ModuleStatus{
+		TotalModules:      total,
 		RegisteredModules: registered,
-		RunningModules: running,
-		DisabledModules: disabled,
-		FailedModules: failed,
+		RunningModules:    running,
+		DisabledModules:   disabled,
+		FailedModules:     failed,
 	}
 }

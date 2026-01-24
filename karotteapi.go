@@ -8,20 +8,15 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/karotte128/karotteapi/apitypes"
 	"github.com/karotte128/karotteapi/internal/core"
 	_ "github.com/karotte128/karotteapi/internal/middleware" // automatically loads all middleware via init()
 	_ "github.com/karotte128/karotteapi/internal/modules"    // automatically loads all modules via init()
 )
 
-// ApiDetails contains all details to create a new api.
-type ApiDetails struct {
-	ConfigPath   string
-	PermProvider core.PermissionProvider
-}
-
 // InitAPI starts the HTTP server, loads all registered modules and middleware,
 // and mounts each module under its prefix.
-func InitAPI(details ApiDetails) {
+func InitAPI(details apitypes.ApiDetails) {
 	// Load config
 	err := core.LoadConfig(details.ConfigPath)
 	if err != nil {

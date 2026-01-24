@@ -3,10 +3,11 @@ package middleware
 import (
 	"net/http"
 
+	"github.com/karotte128/karotteapi/apitypes"
 	"github.com/karotte128/karotteapi/internal/core"
 )
 
-var AuthMiddleware = core.Middleware{
+var AuthMiddleware = apitypes.Middleware{
 	Name:     "auth",
 	Handler:  AuthHandler,
 	Priority: 3,
@@ -16,7 +17,7 @@ func AuthHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		header := r.Header.Get("X-API-Key")
 
-		var authInfo core.AuthInfo
+		var authInfo apitypes.AuthInfo
 
 		if header == "" {
 			authInfo.ApiKey = ""
