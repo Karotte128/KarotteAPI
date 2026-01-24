@@ -18,10 +18,7 @@ import (
 // and mounts each module under its prefix.
 func InitAPI(details apitypes.ApiDetails) {
 	// Load config
-	err := core.LoadConfig(details.ConfigPath)
-	if err != nil {
-		log.Fatal(err)
-	}
+	core.LoadConfig(details.Config)
 
 	// Get server config
 	serverConfig, serverConfigOk := core.GetServerConfig()

@@ -4,7 +4,7 @@ import "net/http"
 
 // ApiDetails contains all details to create a new api.
 type ApiDetails struct {
-	ConfigPath   string
+	Config       map[string]any
 	PermProvider PermissionProvider
 }
 
