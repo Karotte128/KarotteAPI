@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"log"
 	"slices"
 
 	"github.com/karotte128/karotteapi/apitypes"
@@ -25,6 +26,10 @@ func HasPermission(info apitypes.AuthInfo, perm string) bool {
 }
 
 func SetPermissionProvider(provider apitypes.PermissionProvider) {
+	if provider == nil {
+		log.Println("[AUTHENTICATION] No permission provider registered!")
+	}
+
 	permissionProvider = provider
 }
 
