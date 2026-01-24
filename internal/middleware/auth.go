@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/karotte128/karotteapi/core"
+	"github.com/karotte128/karotteapi/internal/core"
 )
 
 var AuthMiddleware = core.Middleware{
@@ -37,9 +37,12 @@ func init() {
 }
 
 func getPermissions(key string) []string {
+	permissionProvider := core.GetPermissionProvider()
 	var permissions []string
 
-	//TODO: add permissions system
+	if permissionProvider != nil {
+		permissions = permissionProvider(key)
+	}
 
 	return permissions
 }

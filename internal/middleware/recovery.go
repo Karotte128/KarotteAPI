@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/karotte128/karotteapi/core"
+	"github.com/karotte128/karotteapi/internal/core"
 )
 
 // RecoveryMiddleware wraps every request handler in a recover() block.

@@ -8,14 +8,15 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/karotte128/karotteapi/core"
-	_ "github.com/karotte128/karotteapi/middleware" // automatically loads all middleware via init()
-	_ "github.com/karotte128/karotteapi/modules"    // automatically loads all modules via init()
+	"github.com/karotte128/karotteapi/internal/core"
+	_ "github.com/karotte128/karotteapi/internal/middleware" // automatically loads all middleware via init()
+	_ "github.com/karotte128/karotteapi/internal/modules"    // automatically loads all modules via init()
 )
 
 // ApiDetails contains all details to create a new api.
 type ApiDetails struct {
-	ConfigPath string
+	ConfigPath   string
+	PermProvider core.PermissionProvider
 }
 
 // InitAPI starts the HTTP server, loads all registered modules and middleware,
@@ -46,6 +47,8 @@ func InitAPI(details ApiDetails) {
 
 	// A multiplexer to route module-specific handlers.
 	mux := http.NewServeMux()
+
+	core.SetPermissionProvider(details.PermProvider)
 
 	// Load all modules of the module registry.
 	core.LoadRegisteredModules(mux)

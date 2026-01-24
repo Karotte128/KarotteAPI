@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/karotte128/karotteapi/core"
+	"github.com/karotte128/karotteapi/internal/core"
 )
 
 var LoggingMiddleware = core.Middleware{

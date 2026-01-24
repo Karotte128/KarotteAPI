@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/karotte128/karotteapi/core"
+	"github.com/karotte128/karotteapi/internal/core"
 )
 
 func status(w http.ResponseWriter, r *http.Request) {
