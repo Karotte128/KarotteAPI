@@ -24,12 +24,3 @@ func GetServerConfig() (map[string]any, bool) {
 
 	return GetNestedValue[map[string]any](config, "server")
 }
-
-// GetExternalConfig returns the external config.
-func GetExternalConfig() (map[string]any, bool) {
-	if config == nil {
-		return nil, false
-	}
-
-	return GetNestedValue[map[string]any](config, "external")
-}

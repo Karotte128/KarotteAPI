@@ -23,13 +23,6 @@ func GetModuleConfig(moduleName string) (map[string]any, bool) {
 	return core.GetModuleConfig(moduleName)
 }
 
-// This function returns the external config.
-// The external config can be used for external components (for example database access).
-// This reads from the provided config.
-func GetExternalConfig() (map[string]any, bool) {
-	return core.GetExternalConfig()
-}
-
 // This function should be used inside the init() function of each middleware.
 // It adds the middleware to the middleware registry.
 func RegisterMiddleware(middleware apitypes.Middleware) {
