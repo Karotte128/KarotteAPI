@@ -15,7 +15,7 @@ This README is intended for **developers who want to use KarotteAPI as a depende
 - Core Packages
   - karotteapi
   - apitypes
-  - public
+  - core
 - Basic Usage
   - Setting up the API server
   - Registering a Module
@@ -72,7 +72,7 @@ Then import the required packages in your code:
 import (
     "github.com/Karotte128/KarotteAPI"
     "github.com/Karotte128/KarotteAPI/apitypes"
-    "github.com/Karotte128/KarotteAPI/public"
+    "github.com/Karotte128/KarotteAPI/core"
 )
 ```
 
@@ -109,9 +109,9 @@ These types are intended to be implemented or consumed by your application code.
 
 ---
 
-### public
+### core
 
-The `public` package exposes the supported API surface for interacting with the framework.
+The `core` package exposes the supported API surface for interacting with the framework.
 
 Common functions include:
 
@@ -153,7 +153,7 @@ import (
     "github.com/karotte128/apiutils/permissions"
 	"github.com/karotte128/karotteapi"
 	"github.com/karotte128/karotteapi/apitypes"
-	"github.com/karotte128/karotteapi/public"
+	"github.com/karotte128/karotteapi/core"
 
     "github.com/jackc/pgx/v5/pgxpool"
 )
@@ -170,7 +170,7 @@ func main() {
 
 	conf := config.ExpandEnvConfig(rawConf) // Replace ENV vars in the config (APIUtils)
 
-	dbconn, ok := public.GetNestedValue[string](conf, "database", "connection") // Get the pgx connection string from the config.
+	dbconn, ok := core.GetNestedValue[string](conf, "database", "connection") // Get the pgx connection string from the config.
 	if !ok {
 		log.Fatal("no database config!")
 	}
@@ -294,7 +294,7 @@ Inside a module handler:
 func handle(w http.ResponseWriter, r *http.Request) {
     auth := core.GetAuthInfo(r.Context()) // Get AuthInfo from the request context.
     
-    if auth == nil || !public.HasPermission(auth, "admin") { // Check if auth is set and user has permission 
+    if auth == nil || !core.HasPermission(auth, "admin") { // Check if auth is set and user has permission 
         fmt.Fprint(w, "Access denied!") // User does not have permission
     }
     
