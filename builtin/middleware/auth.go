@@ -18,7 +18,7 @@ func authHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		header := r.Header.Get("X-API-Key")
 
-		var authInfo karotteapi.AuthInfo
+		var authInfo internal.AuthInfo
 
 		if header == "" {
 			authInfo.ApiKey = ""

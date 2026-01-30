@@ -7,14 +7,15 @@ import (
 	"github.com/karotte128/karotteapi/internal"
 )
 
-// This function gets the AuthInfo from the request context.
-func GetAuthInfo(ctx context.Context) *karotteapi.AuthInfo {
-	return internal.GetAuthInfo(ctx)
-}
-
 // This function checks if the AuthInfo of a request has the given permission.
-func HasPermission(info karotteapi.AuthInfo, perm string) bool {
-	return internal.HasPermission(info, perm)
+func HasPermission(ctx context.Context, perm string) bool {
+	info := internal.GetAuthInfo(ctx)
+
+	if info == nil {
+		return false
+	}
+
+	return internal.HasPermission(*info, perm)
 }
 
 // This function returns the config of a module.

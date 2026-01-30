@@ -14,7 +14,7 @@ This README is intended for **developers who want to use KarotteAPI as a depende
 - Installation
 - Core Packages
   - karotteapi
-  - apitypes
+  - api
   - core
 - Basic Usage
   - Setting up the API server
@@ -95,9 +95,6 @@ Key concepts include:
 - **Middleware**  
   Interface for request/response middleware components.
 
-- **AuthInfo**  
-  Carries authentication and permission-related information for a request.
-
 - **PermissionProvider**  
   Abstraction for permission resolution and checks.
 
@@ -123,11 +120,8 @@ Common functions include:
 - `RegisterMiddleware(middleware)`  
   Registers a middleware component.
 
-- `GetAuthInfo(ctx)`  
-  Retrieves authentication information from a request context.
-
-- `HasPermission(authInfo, permission)`  
-  Checks whether a request has a specific permission.
+- `HasPermission(ctx, permission)`
+  Checks whether a request has a specific permission from a request context.
 
 - `GetModuleConfig(moduleName)`  
   Retrieves configuration scoped to a specific module.
@@ -296,9 +290,7 @@ Inside a module handler:
 
 ```go
 func handle(w http.ResponseWriter, r *http.Request) {
-    auth := core.GetAuthInfo(r.Context()) // Get AuthInfo from the request context.
-    
-    if auth == nil || !core.HasPermission(auth, "admin") { // Check if auth is set and user has permission 
+    if !core.HasPermission(r.Context(), "admin:*") { // Get AuthInfo from the request context and check if user has permission 
         fmt.Fprint(w, "Access denied!") // User does not have permission
     }
     

@@ -8,16 +8,6 @@ type ApiDetails struct {
 	PermProvider PermissionProvider
 }
 
-// AuthInfo is created by the auth middleware.
-// It contains the authentication status and permissions of the request.
-type AuthInfo struct {
-	// ApiKey is the raw key sent by the user. Do not use this.
-	ApiKey string
-
-	// Permissions is the list of permissions the user has.
-	Permissions []string
-}
-
 // PermissionProvider is the function used for getting the users permissions from the API key.
 type PermissionProvider func(key string) []string
 
