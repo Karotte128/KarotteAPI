@@ -1,4 +1,4 @@
-package core
+package internal
 
 // Global config instance
 var config map[string]any

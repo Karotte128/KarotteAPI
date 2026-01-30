@@ -3,11 +3,12 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/karotte128/karotteapi/apitypes"
-	"github.com/karotte128/karotteapi/internal/core"
+	"github.com/karotte128/karotteapi"
+	"github.com/karotte128/karotteapi/core"
+	"github.com/karotte128/karotteapi/internal"
 )
 
-var AuthMiddleware = apitypes.Middleware{
+var AuthMiddleware = karotteapi.Middleware{
 	Name:     "auth",
 	Handler:  AuthHandler,
 	Priority: 3,
@@ -17,7 +18,7 @@ func AuthHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		header := r.Header.Get("X-API-Key")
 
-		var authInfo apitypes.AuthInfo
+		var authInfo karotteapi.AuthInfo
 
 		if header == "" {
 			authInfo.ApiKey = ""
@@ -27,7 +28,7 @@ func AuthHandler(next http.Handler) http.Handler {
 			authInfo.Permissions = getPermissions(header)
 		}
 
-		ctx := core.SetAuthInfo(r.Context(), &authInfo)
+		ctx := internal.SetAuthInfo(r.Context(), &authInfo)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -38,7 +39,7 @@ func init() {
 }
 
 func getPermissions(key string) []string {
-	permissionProvider := core.GetPermissionProvider()
+	permissionProvider := internal.GetPermissionProvider()
 	var permissions []string
 
 	if permissionProvider != nil {

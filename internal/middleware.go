@@ -1,11 +1,11 @@
-package core
+package internal
 
 import (
 	"log"
 	"net/http"
 	"sort"
 
-	"github.com/karotte128/karotteapi/apitypes"
+	"github.com/karotte128/karotteapi"
 )
 
 // Middleware is a function that wraps an http.Handler and returns a new one.
@@ -21,16 +21,16 @@ import (
 
 // registry stores all registered middleware, in order of registration.
 // Middlewares are applied in the same order they were added.
-var middleware_registry []apitypes.Middleware
+var middleware_registry []karotteapi.Middleware
 
 // RegisterMiddleware registers a new global middleware.
 // Usually called from init() inside a middleware package.
-func RegisterMiddleware(middleware apitypes.Middleware) {
+func RegisterMiddleware(middleware karotteapi.Middleware) {
 	middleware_registry = append(middleware_registry, middleware)
 }
 
 // Middlewares returns all registered middleware.
-func GetMiddlewares() []apitypes.Middleware {
+func GetMiddlewares() []karotteapi.Middleware {
 	return middleware_registry
 }
 

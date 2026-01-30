@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/karotte128/karotteapi/internal/core"
+	"github.com/karotte128/karotteapi/internal"
 )
 
 func status(w http.ResponseWriter, r *http.Request) {
@@ -18,7 +18,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 		FailedModules     int    `json:"failedModules"`
 	}
 
-	status := core.GetModuleStatus()
+	status := internal.GetModuleStatus()
 
 	var apiStatus string
 

@@ -1,75 +1,57 @@
 package karotteapi
 
-import (
-	"context"
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
+import "net/http"
 
-	"github.com/karotte128/karotteapi/apitypes"
-	"github.com/karotte128/karotteapi/internal/core"
-	_ "github.com/karotte128/karotteapi/internal/middleware" // automatically loads all middleware via init()
-	_ "github.com/karotte128/karotteapi/internal/modules"    // automatically loads all modules via init()
-)
+// ApiDetails contains all details to create a new api.
+type ApiDetails struct {
+	Config       map[string]any
+	PermProvider PermissionProvider
+}
 
-// InitAPI starts the HTTP server, loads all registered modules and middleware,
-// and mounts each module under its prefix.
-func InitAPI(details apitypes.ApiDetails) {
-	// Load config
-	core.LoadConfig(details.Config)
+// AuthInfo is created by the auth middleware.
+// It contains the authentication status and permissions of the request.
+type AuthInfo struct {
+	// ApiKey is the raw key sent by the user. Do not use this.
+	ApiKey string
 
-	// Get server config
-	serverConfig, serverConfigOk := core.GetServerConfig()
-	if !serverConfigOk {
-		log.Fatal("[SERVER] No server config!")
-	}
+	// Permissions is the list of permissions the user has.
+	Permissions []string
+}
 
-	// Get server address
-	addr, addrOk := core.GetNestedValue[string](serverConfig, "address")
-	if !addrOk {
-		log.Fatal("[SERVER] No server address config!")
-	}
+// PermissionProvider is the function used for getting the users permissions from the API key.
+type PermissionProvider func(key string) []string
 
-	// check if address has no value
-	if addr == "" {
-		log.Fatal("[SERVER] address is not configured!")
-	}
+// Middleware is the struct the middleware needs to provide to the middleware registry to register itself.
+type Middleware struct {
+	// Name is the name of the middleware. It is used for logging.
+	Name string
 
-	// A multiplexer to route module-specific handlers.
-	mux := http.NewServeMux()
+	// Priority is the order in which middlewares should be registered.
+	// Lower number means the middleware gets registered earlier (higher priority).
+	Priority uint
 
-	core.SetPermissionProvider(details.PermProvider)
+	// Handler is the http.Handler of the middleware.
+	Handler func(http.Handler) (handler http.Handler)
+}
 
-	// Load all modules of the module registry.
-	core.LoadRegisteredModules(mux)
+// Module is the struct the module needs to provide to the module registry to register itself.
+type Module struct {
+	// Name is the name of the module. It is used for logging.
+	Name string
 
-	// Apply global middleware to the root mux.
-	handler := core.ApplyRegisteredMiddleware(mux)
+	// Routes returns a URL prefix and an http.Handler that serves all routes
+	// for this module.
+	//
+	// Example:
+	//   prefix = "/example/"
+	//   handler = http.HandlerFunc()
+	Routes func() (prefix string, handler http.Handler)
 
-	// listen for shutdown notification
-	ctx, stop := signal.NotifyContext(
-		context.Background(),
-		os.Interrupt,
-		syscall.SIGTERM,
-	)
-	defer stop()
+	// Startup is a function that is run on startup.
+	// This can be used to initialize a connection to external services like databases.
+	Startup func() error
 
-	// start http server
-	go func() {
-		log.Printf("[SERVER] running on %s", addr)
-		err := http.ListenAndServe(addr, handler)
-
-		if err != nil {
-			log.Fatalf("[SERVER] error: %v", err)
-		}
-	}()
-
-	// shutdown triggered
-	<-ctx.Done()
-
-	log.Println("[SERVER] shutting down...")
-	// shutting down registered modules
-	core.ShutdownRegisteredModules()
+	// Shutdown is a function that is run on shutdown.
+	// This can be used to cleanly disconnect from services connected during Startup().
+	Shutdown func() error
 }

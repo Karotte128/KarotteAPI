@@ -4,11 +4,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/karotte128/karotteapi/apitypes"
-	"github.com/karotte128/karotteapi/internal/core"
+	"github.com/karotte128/karotteapi"
+	"github.com/karotte128/karotteapi/core"
 )
 
-var statusModule = apitypes.Module{
+var statusModule = karotteapi.Module{
 	Name:     "status",
 	Routes:   routes,
 	Startup:  startup,

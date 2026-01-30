@@ -1,10 +1,10 @@
-package core
+package internal
 
 import (
 	"log"
 	"net/http"
 
-	"github.com/karotte128/karotteapi/apitypes"
+	"github.com/karotte128/karotteapi"
 )
 
 // A module is a component handles requests to an API endpoint.
@@ -34,7 +34,7 @@ const (
 // It is not public to the modules or the main package. It is only for use in core.
 type registryModule struct {
 	// module contains the data provided by the registering module
-	module apitypes.Module
+	module karotteapi.Module
 
 	// status is the current status of the module.
 	status status
@@ -45,7 +45,7 @@ var module_registry []registryModule
 
 // RegisterModule adds a module to the global registry.
 // Typically called from an init() function inside each module package.
-func RegisterModule(module apitypes.Module) {
+func RegisterModule(module karotteapi.Module) {
 	// Structured data for the module registry
 	var reg_mod = registryModule{
 		module: module,
@@ -131,7 +131,7 @@ func ShutdownRegisteredModules() {
 
 // safeShutdownModule is a function that attempts to execute the shutdown function of a module.
 // It makes sure that a panic in the shutdown function does not crash the server.
-func safeShutdownModule(module apitypes.Module) {
+func safeShutdownModule(module karotteapi.Module) {
 	// only execute if the module implements a shutdown function
 	if module.Shutdown != nil {
 		// recover from panic
@@ -153,7 +153,7 @@ func safeShutdownModule(module apitypes.Module) {
 // safeStartModule is a function that attempts to execute the startup function of a module.
 // It returns true if the startup is successfull or the module does not provide a startup function.
 // It makes sure that a panic in the startup function does not crash the server.
-func safeStartModule(module apitypes.Module) bool {
+func safeStartModule(module karotteapi.Module) bool {
 	var ok bool = true
 
 	// only execute if the module implements a startup function

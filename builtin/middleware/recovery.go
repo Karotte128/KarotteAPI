@@ -4,15 +4,15 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/karotte128/karotteapi/apitypes"
-	"github.com/karotte128/karotteapi/internal/core"
+	"github.com/karotte128/karotteapi"
+	"github.com/karotte128/karotteapi/core"
 )
 
 // RecoveryMiddleware wraps every request handler in a recover() block.
 // If a module panics, the panic is caught here so the server remains alive.
 // The user receives a 500 error and the panic is logged.
 
-var RecoveryMiddleware = apitypes.Middleware{
+var RecoveryMiddleware = karotteapi.Middleware{
 	Name:     "recovery",
 	Handler:  RecoveryHandler,
 	Priority: 0,

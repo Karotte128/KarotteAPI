@@ -3,11 +3,11 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/karotte128/karotteapi/apitypes"
-	"github.com/karotte128/karotteapi/internal/core"
+	"github.com/karotte128/karotteapi"
+	"github.com/karotte128/karotteapi/core"
 )
 
-var ContentTypeMiddleware = apitypes.Middleware{
+var ContentTypeMiddleware = karotteapi.Middleware{
 	Name:     "contentType",
 	Handler:  ContentTypeHandler,
 	Priority: 2,
