@@ -71,7 +71,7 @@ Then import the required packages in your code:
 ```go
 import (
     "github.com/Karotte128/KarotteAPI"
-    "github.com/Karotte128/KarotteAPI/apitypes"
+    "github.com/Karotte128/KarotteAPI/api"
     "github.com/Karotte128/KarotteAPI/core"
 )
 ```
@@ -82,11 +82,7 @@ import (
 
 ### karotteapi
 
-The `karotteapi` package contains the `InitAPI` function used to set up and start the API server.
-
-### apitypes
-
-The `apitypes` package defines the core interfaces and data structures used by the framework.
+The `karotteapi` package defines the core interfaces and data structures used by the framework.
 
 Key concepts include:
 
@@ -106,6 +102,12 @@ Key concepts include:
   Abstraction for permission resolution and checks.
 
 These types are intended to be implemented or consumed by your application code.
+
+---
+
+### api
+
+The `api` package contains the `InitAPI` function used to set up and start the API server. 
 
 ---
 
@@ -138,7 +140,7 @@ All application-level interaction with KarotteAPI should go through this package
 
 ### Setting up the API server
 
-To set up the API server, the `InitApi()` function needs to be called with `ApiDetails` as argument.
+To set up the API server, the `api.InitApi()` function needs to be called with `ApiDetails` as argument.
 
 The following example shows a simple setup using [Karotte128/APIUtils](https://github.com/karotte128/apiutils).
 
@@ -152,7 +154,7 @@ import (
 	"github.com/karotte128/apiutils/config"
     "github.com/karotte128/apiutils/permissions"
 	"github.com/karotte128/karotteapi"
-	"github.com/karotte128/karotteapi/apitypes"
+	"github.com/karotte128/karotteapi/api"
 	"github.com/karotte128/karotteapi/core"
 
     "github.com/jackc/pgx/v5/pgxpool"
@@ -161,7 +163,7 @@ import (
 var ConnPool *pgxpool.Pool // pgx connection pool
 
 func main() {
-	var details apitypes.ApiDetails // Create empty ApiDetails.
+	var details karotteapi.ApiDetails // Create empty ApiDetails.
 
 	err, rawConf := config.ReadConfigFromFile("config.toml") // Load toml config using APIUtils.
 	if err != nil {
@@ -179,7 +181,7 @@ func main() {
 
 	details.Config = conf // Set the config.
 	details.PermProvider = getPermissionWrapper // Set the permission provider.
-	karotteapi.InitAPI(details) // Start the API server.
+	api.InitAPI(details) // Start the API server.
 }
 
 func createConnection(pgxconf string) { // Create database connection using the config value.
@@ -218,12 +220,14 @@ enable = true
 connection = "${DBCONN}"
 ```
 
+---
+
 ### Registering a Module
 
 Modules are typically registered during initialization:
 
 ```go
-var exampleModule = apitypes.Module{ // Create the module info.
+var exampleModule = karotteapi.Module{ // Create the module info.
 	Name:     "example", // Name of the module, used for logging.
 	Routes:   routes, // Function that provides the API routes of the module.
 	Startup:  startup, // Function that is executed after the module has been registered. Can be nil if not needed.
@@ -255,14 +259,14 @@ func example(w http.ResponseWriter, r *http.Request) { // http handler that hand
 }
 ```
 
-Your module must implement the appropriate `apitypes.Module` interface.
+Your module must implement the appropriate `karotteapi.Module` interface.
 
 ---
 
 ### Registering a Middleware
 
 ```go
-var exampleMiddleware = apitypes.Middleware{ // Create the example middleware.
+var exampleMiddleware = karotteapi.Middleware{ // Create the example middleware.
 	Name:     "example", // Name of the middleware, used for logging.
 	Handler:  exampleHandler, // Handler function to modify the request.
 	Priority: 10, // Higher number -> gets applied later; lower number -> gets applied earlier.
@@ -310,9 +314,9 @@ KarotteAPI expects configuration to be supplied by the host application.
 The mechanism (environment variables, files, flags, etc.) is left to the integrator.
 
 [Karotte128/APIUtils](https://github.com/karotte128/apiutils) contains a simple to use configuration loader system that is compatible with this API.
-It reads the config from a `.yaml` file and replaces `${ENV}` variables dynamically.
+It reads the config from a `.toml` file and replaces `${ENV}` variables dynamically.
 
-Use `GetModuleConfig(name)` inside a module to get module-specific configuration.
+Use `core.GetModuleConfig(name)` inside a module to get module-specific configuration.
 
 ---
 
