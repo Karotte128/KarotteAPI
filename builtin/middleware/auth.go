@@ -8,13 +8,13 @@ import (
 	"github.com/karotte128/karotteapi/internal"
 )
 
-var AuthMiddleware = karotteapi.Middleware{
+var authMiddleware = karotteapi.Middleware{
 	Name:     "auth",
-	Handler:  AuthHandler,
+	Handler:  authHandler,
 	Priority: 3,
 }
 
-func AuthHandler(next http.Handler) http.Handler {
+func authHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		header := r.Header.Get("X-API-Key")
 
@@ -35,7 +35,7 @@ func AuthHandler(next http.Handler) http.Handler {
 }
 
 func init() {
-	core.RegisterMiddleware(AuthMiddleware)
+	core.RegisterMiddleware(authMiddleware)
 }
 
 func getPermissions(key string) []string {

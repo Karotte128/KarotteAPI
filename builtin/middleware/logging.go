@@ -8,9 +8,9 @@ import (
 	"github.com/karotte128/karotteapi/core"
 )
 
-var LoggingMiddleware = karotteapi.Middleware{
+var loggingMiddleware = karotteapi.Middleware{
 	Name:     "logging",
-	Handler:  LoggingHandler,
+	Handler:  loggingHandler,
 	Priority: 1,
 }
 
@@ -33,8 +33,8 @@ func (lrw *loggingResponseWriter) Write(b []byte) (int, error) {
 	return size, err
 }
 
-// LoggingMiddleware logs method, path, status, and response size.
-func LoggingHandler(next http.Handler) http.Handler {
+// loggingMiddleware logs method, path, status, and response size.
+func loggingHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		lrw := &loggingResponseWriter{
 			ResponseWriter: w,
@@ -54,5 +54,5 @@ func LoggingHandler(next http.Handler) http.Handler {
 
 // Automatically register this middleware globally
 func init() {
-	core.RegisterMiddleware(LoggingMiddleware)
+	core.RegisterMiddleware(loggingMiddleware)
 }

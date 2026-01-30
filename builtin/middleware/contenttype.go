@@ -7,13 +7,13 @@ import (
 	"github.com/karotte128/karotteapi/core"
 )
 
-var ContentTypeMiddleware = karotteapi.Middleware{
+var contentTypeMiddleware = karotteapi.Middleware{
 	Name:     "contentType",
-	Handler:  ContentTypeHandler,
+	Handler:  contentTypeHandler,
 	Priority: 2,
 }
 
-func ContentTypeHandler(next http.Handler) http.Handler {
+func contentTypeHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if w.Header().Get("Content-Type") == "" {
 			w.Header().Set("Content-Type", "application/json")
@@ -23,5 +23,5 @@ func ContentTypeHandler(next http.Handler) http.Handler {
 }
 
 func init() {
-	core.RegisterMiddleware(ContentTypeMiddleware)
+	core.RegisterMiddleware(contentTypeMiddleware)
 }

@@ -12,13 +12,13 @@ import (
 // If a module panics, the panic is caught here so the server remains alive.
 // The user receives a 500 error and the panic is logged.
 
-var RecoveryMiddleware = karotteapi.Middleware{
+var recoveryMiddleware = karotteapi.Middleware{
 	Name:     "recovery",
-	Handler:  RecoveryHandler,
+	Handler:  recoveryHandler,
 	Priority: 0,
 }
 
-func RecoveryHandler(next http.Handler) http.Handler {
+func recoveryHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -34,5 +34,5 @@ func RecoveryHandler(next http.Handler) http.Handler {
 // Automatically register this middleware at startup.
 // It becomes part of the global middleware registry.
 func init() {
-	core.RegisterMiddleware(RecoveryMiddleware)
+	core.RegisterMiddleware(recoveryMiddleware)
 }
