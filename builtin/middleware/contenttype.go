@@ -8,9 +8,10 @@ import (
 )
 
 var contentTypeMiddleware = karotteapi.Middleware{
-	Name:     "contentType",
-	Handler:  contentTypeHandler,
-	Priority: 2,
+	Name:        "contentType",
+	Handler:     contentTypeHandler,
+	Priority:    2,
+	ForceEnable: false,
 }
 
 func contentTypeHandler(next http.Handler) http.Handler {

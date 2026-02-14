@@ -9,9 +9,10 @@ import (
 )
 
 var loggingMiddleware = karotteapi.Middleware{
-	Name:     "logging",
-	Handler:  loggingHandler,
-	Priority: 1,
+	Name:        "logging",
+	Handler:     loggingHandler,
+	Priority:    1,
+	ForceEnable: false,
 }
 
 // loggingResponseWriter wraps http.ResponseWriter so we can capture

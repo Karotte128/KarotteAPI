@@ -16,6 +16,15 @@ func GetModuleConfig(moduleName string) (map[string]any, bool) {
 	return GetNestedValue[map[string]any](config, "modules", moduleName)
 }
 
+// GetMiddlewareConfig returns the raw config block for a module.
+func GetMiddlewareConfig(middlewareName string) (map[string]any, bool) {
+	if config == nil {
+		return nil, false
+	}
+
+	return GetNestedValue[map[string]any](config, "middleware", middlewareName)
+}
+
 // GetServerConfig returns the server config.
 func GetServerConfig() (map[string]any, bool) {
 	if config == nil {

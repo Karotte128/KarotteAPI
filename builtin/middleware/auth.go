@@ -9,9 +9,10 @@ import (
 )
 
 var authMiddleware = karotteapi.Middleware{
-	Name:     "auth",
-	Handler:  authHandler,
-	Priority: 3,
+	Name:        "auth",
+	Handler:     authHandler,
+	Priority:    3,
+	ForceEnable: false,
 }
 
 func authHandler(next http.Handler) http.Handler {

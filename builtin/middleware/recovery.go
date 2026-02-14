@@ -13,9 +13,10 @@ import (
 // The user receives a 500 error and the panic is logged.
 
 var recoveryMiddleware = karotteapi.Middleware{
-	Name:     "recovery",
-	Handler:  recoveryHandler,
-	Priority: 0,
+	Name:        "recovery",
+	Handler:     recoveryHandler,
+	Priority:    0,
+	ForceEnable: true,
 }
 
 func recoveryHandler(next http.Handler) http.Handler {

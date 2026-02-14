@@ -42,8 +42,34 @@ func ApplyRegisteredMiddleware(h http.Handler) http.Handler {
 	})
 
 	for _, middleware := range middleware_registry {
-		h = middleware.Handler(h)
-		log.Printf("[MIDDLEWARE] %s was applied!", middleware.Name)
+		var enabled bool = false
+
+		if middleware.ForceEnable {
+			enabled = true
+		} else {
+			// get enable value from config
+			config, okConfig := GetMiddlewareConfig(middleware.Name)
+			if okConfig {
+				enable_conf, okEnable := GetNestedValue[bool](config, "enable")
+				if okEnable {
+					enabled = enable_conf
+				} else {
+					// The config has no enable value.
+					log.Printf("[MIDDLEWARE] %s has no enable value in config!", middleware.Name)
+				}
+			} else {
+				// The module has no config entry
+				log.Printf("[MIDDLEWARE] %s has no config!", middleware.Name)
+			}
+		}
+
+		if enabled {
+			h = middleware.Handler(h)
+			log.Printf("[MIDDLEWARE] %s was applied!", middleware.Name)
+		} else {
+			// Middleware is disabled
+			log.Printf("[MIDDLEWARE] %s is disabled.", middleware.Name)
+		}
 	}
 	return h
 }

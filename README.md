@@ -126,6 +126,9 @@ Common functions include:
 - `GetModuleConfig(moduleName)`  
   Retrieves configuration scoped to a specific module.
 
+- `GetMiddlewareConfig(middlewareName)`  
+  Retrieves configuration scoped to a specific middleware.
+
 All application-level interaction with KarotteAPI should go through this package.
 
 ---
@@ -264,6 +267,7 @@ var exampleMiddleware = karotteapi.Middleware{ // Create the example middleware.
 	Name:     "example", // Name of the middleware, used for logging.
 	Handler:  exampleHandler, // Handler function to modify the request.
 	Priority: 10, // Higher number -> gets applied later; lower number -> gets applied earlier.
+	ForceEnable: false, // If enabled, the enable value in the middleware config is ignored. Only use on necessary middlewares.
 }
 
 func exampleHandler(next http.Handler) http.Handler { // Handler function, returns the new (modified) handler.

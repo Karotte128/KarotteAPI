@@ -20,6 +20,11 @@ type Middleware struct {
 	// Lower number means the middleware gets registered earlier (higher priority).
 	Priority uint
 
+	// Middleware can be force enabled by setting this value to true.
+	// This means the config "enable" value is ignored for this middleware.
+	// Only use this if the middleware is absolutely necessary.
+	ForceEnable bool
+
 	// Handler is the http.Handler of the middleware.
 	Handler func(http.Handler) (handler http.Handler)
 }
