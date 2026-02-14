@@ -1,7 +1,7 @@
 [server]
 address = "${ADDR:-:8080}"
 
-[modules.status]
+[modules.health]
 enable = true
 
 [middleware.contentType]

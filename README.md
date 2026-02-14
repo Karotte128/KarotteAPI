@@ -20,7 +20,10 @@ This README is intended for **developers who want to use KarotteAPI as a depende
   - Setting up the API server
   - Registering a Module
   - Registering a Middleware
-  - Permission Checks
+- Builtins
+  - Modules
+  - Middleware
+- Authentication
 - Configuration
 - License
 
@@ -253,10 +256,34 @@ Middleware can inspect or modify requests using the provided context.
 
 ---
 
+## Builtins
+
+### Modules
+
+Currently, there is only the `health` module built in. It returns the health status of the API server.
+
+### Middleware
+
+There are some basic middlewares built in, usefull for easy setup.
+
+- `recovery`:
+  This middleware prevents the API server from crashing if the processing of a request panics.
+  It can not be disabled (`ForceEnable = true`)
+
+- `logging`:
+  This middleware contains a simple request logger, usefull for debugging.
+  It can be disabled in the config.
+
+- `contenttype`
+  This middleware automatically sets the `Content-Type` header to `application/json` if it is not manually set.
+  It can be disabled in the config.
+
+---
+
 ## Authentication
 
 KarotteAPI does not have authentication built in.
-For an easy auth system it is recommended to use [Karotte128/APIUtils simpleAuth](https://github.com/karotte128/apiutils/tree/main/simpleAuth)
+For an easy auth system it is recommended to use [Karotte128/APIUtils simpleauth](https://github.com/karotte128/apiutils/tree/main/simpleauth)
 
 ## Configuration
 

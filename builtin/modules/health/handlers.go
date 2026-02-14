@@ -1,4 +1,4 @@
-package status
+package health
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"github.com/karotte128/karotteapi/internal"
 )
 
-func status(w http.ResponseWriter, r *http.Request) {
+func health(w http.ResponseWriter, r *http.Request) {
 
 	type response struct {
 		ApiStatus         string `json:"apiStatus"`
