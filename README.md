@@ -87,7 +87,7 @@ The `karotteapi` package defines the core interfaces and data structures used by
 Key concepts include:
 
 - **ApiDetails**
-  Contains the API config as `map[string]any` and the `PermissionProvider`.
+  Contains the API config as `map[string]any`.
 
 - **Module**  
   Represents a logical API module that can register routes, handlers, or behavior.
@@ -95,8 +95,8 @@ Key concepts include:
 - **Middleware**  
   Interface for request/response middleware components.
 
-- **PermissionProvider**  
-  Abstraction for permission resolution and checks.
+- **RequestContext**
+  Allows to pass additional data from middleware to module using the request context.
 
 These types are intended to be implemented or consumed by your application code.
 
@@ -120,14 +120,17 @@ Common functions include:
 - `RegisterMiddleware(middleware)`  
   Registers a middleware component.
 
-- `HasPermission(ctx, permission)`
-  Checks whether a request has a specific permission from a request context.
-
 - `GetModuleConfig(moduleName)`  
   Retrieves configuration scoped to a specific module.
 
 - `GetMiddlewareConfig(middlewareName)`  
   Retrieves configuration scoped to a specific middleware.
+
+- `SetRequestContext(ctx context.Context, info *karotteapi.RequestContext)`
+  Sets additional data on the request context.
+
+- `GetRequestContext(ctx context.Context, contextKey string)`
+  Retrieves additional data from the request context.
 
 All application-level interaction with KarotteAPI should go through this package.
 
@@ -149,15 +152,10 @@ import (
     "context"
 
 	"github.com/karotte128/apiutils/config"
-    "github.com/karotte128/apiutils/permissions"
 	"github.com/karotte128/karotteapi"
 	"github.com/karotte128/karotteapi/api"
 	"github.com/karotte128/karotteapi/core"
-
-    "github.com/jackc/pgx/v5/pgxpool"
 )
-
-var ConnPool *pgxpool.Pool // pgx connection pool
 
 func main() {
 	var details karotteapi.ApiDetails // Create empty ApiDetails.
@@ -169,38 +167,8 @@ func main() {
 
 	conf := config.ExpandEnvConfig(rawConf) // Replace ENV vars in the config (APIUtils)
 
-	dbconn, ok := core.GetNestedValue[string](conf, "database", "connection") // Get the pgx connection string from the config.
-	if !ok {
-		log.Fatal("no database config!")
-	}
-
-	createConnection(dbconn) // Create database connection.
-
 	details.Config = conf // Set the config.
-	details.PermProvider = getPermissionWrapper // Set the permission provider.
 	api.InitAPI(details) // Start the API server.
-}
-
-func createConnection(pgxconf string) { // Create database connection using the config value.
-	poolConfig, err := pgxpool.ParseConfig(pgxconf)
-	ConnPool, err = pgxpool.NewWithConfig(context.Background(), poolConfig)
-	if err != nil {
-		log.Fatalf("Unable to connect to database: %v\n", err)
-	}
-
-	err = ConnPool.Ping(context.Background())
-	if err != nil {
-		log.Fatalf("Ping to database failed: %v\n", err)
-	}
-}
-
-func getPermissionWrapper(key string) []string { // Wrapper around APIUtils GetPermission
-	info, err := permissions.GetPermission(ConnPool, "authentication", key)
-	if err != nil {
-		log.Println(err.Error())
-	}
-
-	return info.Permissions
 }
 ```
 
@@ -212,9 +180,6 @@ address = "${ADDR:-:8080}"
 
 [modules.status]
 enable = true
-
-[database]
-connection = "${DBCONN}"
 ```
 
 ---
@@ -288,21 +253,10 @@ Middleware can inspect or modify requests using the provided context.
 
 ---
 
-### Permission Checks
+## Authentication
 
-Inside a module handler:
-
-```go
-func handle(w http.ResponseWriter, r *http.Request) {
-    if !core.HasPermission(r.Context(), "admin:*") { // Get AuthInfo from the request context and check if user has permission 
-        fmt.Fprint(w, "Access denied!") // User does not have permission
-    }
-    
-    fmt.Fprint(w, "Hello World!") // User does have permission   
-}
-```
-
----
+KarotteAPI does not have authentication built in.
+For an easy auth system it is recommended to use [Karotte128/APIUtils simpleAuth](https://github.com/karotte128/apiutils/tree/main/simpleAuth)
 
 ## Configuration
 

@@ -40,8 +40,6 @@ func InitAPI(details karotteapi.ApiDetails) {
 	// A multiplexer to route module-specific handlers.
 	mux := http.NewServeMux()
 
-	internal.SetPermissionProvider(details.PermProvider)
-
 	// Load all modules of the module registry.
 	internal.LoadRegisteredModules(mux)
 

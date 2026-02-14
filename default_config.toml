@@ -4,9 +4,6 @@ address = "${ADDR:-:8080}"
 [modules.status]
 enable = true
 
-[middleware.auth]
-enable = true
-
 [middleware.contentType]
 enable = true
 

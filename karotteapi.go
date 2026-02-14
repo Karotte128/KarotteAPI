@@ -4,12 +4,8 @@ import "net/http"
 
 // ApiDetails contains all details to create a new api.
 type ApiDetails struct {
-	Config       map[string]any
-	PermProvider PermissionProvider
+	Config map[string]any
 }
-
-// PermissionProvider is the function used for getting the users permissions from the API key.
-type PermissionProvider func(key string) []string
 
 // Middleware is the struct the middleware needs to provide to the middleware registry to register itself.
 type Middleware struct {
@@ -49,4 +45,14 @@ type Module struct {
 	// Shutdown is a function that is run on shutdown.
 	// This can be used to cleanly disconnect from services connected during Startup().
 	Shutdown func() error
+}
+
+// RequestContext can be used to pass additional information between Middleware and Module.
+type RequestContext struct {
+	// Info is any data that needs to be passed with the request.
+	Info any
+
+	// ContextKey is a unique identifier for the type of the data.
+	// For example, an auth middleware can use "auth" as the key.
+	ContextKey string
 }

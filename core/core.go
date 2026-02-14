@@ -7,17 +7,6 @@ import (
 	"github.com/karotte128/karotteapi/internal"
 )
 
-// This function checks if the AuthInfo of a request has the given permission.
-func HasPermission(ctx context.Context, perm string) bool {
-	info := internal.GetAuthInfo(ctx)
-
-	if info == nil {
-		return false
-	}
-
-	return internal.HasPermission(*info, perm)
-}
-
 // This function returns the config of a module.
 // It should be used in a module for configurable values.
 func GetModuleConfig(moduleName string) (map[string]any, bool) {
@@ -41,4 +30,16 @@ func RegisterModule(module karotteapi.Module) {
 // Type specifies the type of the return value.
 func GetNestedValue[Type any](m map[string]any, path ...string) (Type, bool) {
 	return internal.GetNestedValue[Type](m, path...)
+}
+
+// This function adds additional info to the request context.
+// It is usually used by a middleware.
+func SetRequestContext(ctx context.Context, info *karotteapi.RequestContext) context.Context {
+	return internal.SetRequestContext(ctx, info)
+}
+
+// This function retrieves the additional info from the request context.
+// It is usually used in a module.
+func GetRequestContext(ctx context.Context, contextKey string) karotteapi.RequestContext {
+	return internal.GetRequestContext(ctx, contextKey)
 }
