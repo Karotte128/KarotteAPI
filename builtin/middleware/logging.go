@@ -1,7 +1,10 @@
 package middleware
 
 import (
+	"bufio"
+	"fmt"
 	"log"
+	"net"
 	"net/http"
 
 	"github.com/karotte128/karotteapi"
@@ -23,15 +26,33 @@ type loggingResponseWriter struct {
 	size       int
 }
 
+// Track status code
 func (lrw *loggingResponseWriter) WriteHeader(code int) {
 	lrw.statusCode = code
 	lrw.ResponseWriter.WriteHeader(code)
 }
 
+// Track response size
 func (lrw *loggingResponseWriter) Write(b []byte) (int, error) {
 	size, err := lrw.ResponseWriter.Write(b)
 	lrw.size += size
 	return size, err
+}
+
+// Required for WebSocket upgrade
+func (lrw *loggingResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	hijacker, ok := lrw.ResponseWriter.(http.Hijacker)
+	if !ok {
+		return nil, nil, fmt.Errorf("underlying ResponseWriter does not support Hijacker")
+	}
+	return hijacker.Hijack()
+}
+
+// Required for streaming / websocket flushing
+func (lrw *loggingResponseWriter) Flush() {
+	if flusher, ok := lrw.ResponseWriter.(http.Flusher); ok {
+		flusher.Flush()
+	}
 }
 
 // loggingMiddleware logs method, path, status, and response size.
