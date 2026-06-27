@@ -15,7 +15,7 @@ func GetModuleConfig(moduleName string) (karotteapi.Config, bool) {
 		return nil, false
 	}
 
-	return GetNestedValue[karotteapi.Config](config, "modules", moduleName)
+	return GetNestedValue[map[string]any](config, "modules", moduleName)
 }
 
 // GetMiddlewareConfig returns the raw config block for a module.
@@ -24,7 +24,7 @@ func GetMiddlewareConfig(middlewareName string) (karotteapi.Config, bool) {
 		return nil, false
 	}
 
-	return GetNestedValue[karotteapi.Config](config, "middleware", middlewareName)
+	return GetNestedValue[map[string]any](config, "middleware", middlewareName)
 }
 
 // GetServerConfig returns the server config.
@@ -33,5 +33,5 @@ func GetServerConfig() (karotteapi.Config, bool) {
 		return nil, false
 	}
 
-	return GetNestedValue[karotteapi.Config](config, "server")
+	return GetNestedValue[map[string]any](config, "server")
 }
