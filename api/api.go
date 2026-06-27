@@ -16,9 +16,9 @@ import (
 
 // InitAPI starts the HTTP server, loads all registered modules and middleware,
 // and mounts each module under its prefix.
-func InitAPI(details karotteapi.ApiDetails) {
+func InitAPI(config karotteapi.Config) {
 	// Load config
-	internal.LoadConfig(details.Config)
+	internal.LoadConfig(config)
 
 	// Get server config
 	serverConfig, serverConfigOk := internal.GetServerConfig()

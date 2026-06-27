@@ -9,7 +9,7 @@ import (
 
 // This function returns the config of a module.
 // It should be used in a module for configurable values.
-func GetModuleConfig(moduleName string) (map[string]any, bool) {
+func GetModuleConfig(moduleName string) (karotteapi.Config, bool) {
 	return internal.GetModuleConfig(moduleName)
 }
 
@@ -28,7 +28,7 @@ func RegisterModule(module karotteapi.Module) {
 // This function can be used to get a config value.
 // Input the config and the config path.
 // Type specifies the type of the return value.
-func GetNestedValue[Type any](m map[string]any, path ...string) (Type, bool) {
+func GetNestedValue[Type any](m karotteapi.Config, path ...string) (Type, bool) {
 	return internal.GetNestedValue[Type](m, path...)
 }
 

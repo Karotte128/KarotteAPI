@@ -1,35 +1,37 @@
 package internal
 
-// Global config instance
-var config map[string]any
+import "github.com/karotte128/karotteapi"
 
-func LoadConfig(conf map[string]any) {
+// Global config instance
+var config karotteapi.Config
+
+func LoadConfig(conf karotteapi.Config) {
 	config = conf
 }
 
 // GetModuleConfig returns the raw config block for a module.
-func GetModuleConfig(moduleName string) (map[string]any, bool) {
+func GetModuleConfig(moduleName string) (karotteapi.Config, bool) {
 	if config == nil {
 		return nil, false
 	}
 
-	return GetNestedValue[map[string]any](config, "modules", moduleName)
+	return GetNestedValue[karotteapi.Config](config, "modules", moduleName)
 }
 
 // GetMiddlewareConfig returns the raw config block for a module.
-func GetMiddlewareConfig(middlewareName string) (map[string]any, bool) {
+func GetMiddlewareConfig(middlewareName string) (karotteapi.Config, bool) {
 	if config == nil {
 		return nil, false
 	}
 
-	return GetNestedValue[map[string]any](config, "middleware", middlewareName)
+	return GetNestedValue[karotteapi.Config](config, "middleware", middlewareName)
 }
 
 // GetServerConfig returns the server config.
-func GetServerConfig() (map[string]any, bool) {
+func GetServerConfig() (karotteapi.Config, bool) {
 	if config == nil {
 		return nil, false
 	}
 
-	return GetNestedValue[map[string]any](config, "server")
+	return GetNestedValue[karotteapi.Config](config, "server")
 }

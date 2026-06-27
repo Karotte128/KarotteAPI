@@ -2,10 +2,8 @@ package karotteapi
 
 import "net/http"
 
-// ApiDetails contains all details to create a new api.
-type ApiDetails struct {
-	Config map[string]any
-}
+// Config contains all details to create a new api.
+type Config map[string]any
 
 // Middleware is the struct the middleware needs to provide to the middleware registry to register itself.
 type Middleware struct {

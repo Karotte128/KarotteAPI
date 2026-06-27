@@ -89,7 +89,7 @@ The `karotteapi` package defines the core interfaces and data structures used by
 
 Key concepts include:
 
-- **ApiDetails**
+- **Config**
   Contains the API config as `map[string]any`.
 
 - **Module**  
@@ -107,7 +107,7 @@ These types are intended to be implemented or consumed by your application code.
 
 ### api
 
-The `api` package contains the `InitAPI` function used to set up and start the API server. 
+The `api` package contains the `InitAPI(karotteapi.Config)` function used to set up and start the API server.
 
 ---
 
@@ -143,7 +143,7 @@ All application-level interaction with KarotteAPI should go through this package
 
 ### Setting up the API server
 
-To set up the API server, the `api.InitApi()` function needs to be called with `ApiDetails` as argument.
+To set up the API server, the `api.InitApi(karotteapi.Config)` function needs to be called with the `Config` as argument.
 
 The following example shows a simple setup using [Karotte128/APIUtils](https://github.com/karotte128/apiutils).
 
@@ -161,8 +161,6 @@ import (
 )
 
 func main() {
-	var details karotteapi.ApiDetails // Create empty ApiDetails.
-
 	err, rawConf := config.ReadConfigFromFile("config.toml") // Load toml config using APIUtils.
 	if err != nil {
 		log.Fatal("failed loading config: " + err.Error())
@@ -170,8 +168,7 @@ func main() {
 
 	conf := config.ExpandEnvConfig(rawConf) // Replace ENV vars in the config (APIUtils)
 
-	details.Config = conf // Set the config.
-	api.InitAPI(details) // Start the API server.
+	api.InitAPI(conf) // Start the API server.
 }
 ```
 
@@ -181,7 +178,7 @@ The config.toml for this example contains:
 [server]
 address = "${ADDR:-:8080}"
 
-[modules.status]
+[modules.health]
 enable = true
 ```
 
