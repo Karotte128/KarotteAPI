@@ -1,6 +1,10 @@
 package internal
 
-import "github.com/karotte128/karotteapi"
+import (
+	cfg "github.com/karotte128/karottelib/config"
+
+	"github.com/karotte128/karotteapi"
+)
 
 // Global config instance
 var config karotteapi.Config
@@ -15,7 +19,7 @@ func GetModuleConfig(moduleName string) (karotteapi.Config, bool) {
 		return nil, false
 	}
 
-	return GetNestedValue[map[string]any](config, "modules", moduleName)
+	return cfg.GetNestedValue[map[string]any](config, "modules", moduleName)
 }
 
 // GetMiddlewareConfig returns the raw config block for a module.
@@ -24,7 +28,7 @@ func GetMiddlewareConfig(middlewareName string) (karotteapi.Config, bool) {
 		return nil, false
 	}
 
-	return GetNestedValue[map[string]any](config, "middleware", middlewareName)
+	return cfg.GetNestedValue[map[string]any](config, "middleware", middlewareName)
 }
 
 // GetServerConfig returns the server config.
@@ -33,5 +37,5 @@ func GetServerConfig() (karotteapi.Config, bool) {
 		return nil, false
 	}
 
-	return GetNestedValue[map[string]any](config, "server")
+	return cfg.GetNestedValue[map[string]any](config, "server")
 }

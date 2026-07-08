@@ -8,6 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	cfg "github.com/karotte128/karottelib/config"
+
 	"github.com/karotte128/karotteapi"
 	_ "github.com/karotte128/karotteapi/builtin/middleware" // automatically loads all middleware via init()
 	_ "github.com/karotte128/karotteapi/builtin/modules"    // automatically loads all modules via init()
@@ -27,7 +29,7 @@ func InitAPI(config karotteapi.Config) {
 	}
 
 	// Get server address
-	addr, addrOk := internal.GetNestedValue[string](serverConfig, "address")
+	addr, addrOk := cfg.GetNestedValue[string](serverConfig, "address")
 	if !addrOk {
 		log.Fatal("[SERVER] No server address config!")
 	}

@@ -3,6 +3,8 @@ package core
 import (
 	"context"
 
+	cfg "github.com/karotte128/karottelib/config"
+
 	"github.com/karotte128/karotteapi"
 	"github.com/karotte128/karotteapi/internal"
 )
@@ -29,7 +31,7 @@ func RegisterModule(module karotteapi.Module) {
 // Input the config and the config path.
 // Type specifies the type of the return value.
 func GetNestedValue[Type any](m karotteapi.Config, path ...string) (Type, bool) {
-	return internal.GetNestedValue[Type](m, path...)
+	return cfg.GetNestedValue[Type](m, path...)
 }
 
 // This function adds additional info to the request context.

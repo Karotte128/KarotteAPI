@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	cfg "github.com/karotte128/karottelib/config"
+
 	"github.com/karotte128/karotteapi"
 )
 
@@ -67,7 +69,7 @@ func LoadRegisteredModules(mux *http.ServeMux) {
 		// get enable value from config
 		config, okConfig := GetModuleConfig(reg_mod.module.Name)
 		if okConfig {
-			enable_conf, okEnable := GetNestedValue[bool](config, "enable")
+			enable_conf, okEnable := cfg.GetNestedValue[bool](config, "enable")
 			if okEnable {
 				enabled = enable_conf
 			} else {

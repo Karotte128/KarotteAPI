@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"sort"
 
+	cfg "github.com/karotte128/karottelib/config"
+
 	"github.com/karotte128/karotteapi"
 )
 
@@ -50,7 +52,7 @@ func ApplyRegisteredMiddleware(h http.Handler) http.Handler {
 			// get enable value from config
 			config, okConfig := GetMiddlewareConfig(middleware.Name)
 			if okConfig {
-				enable_conf, okEnable := GetNestedValue[bool](config, "enable")
+				enable_conf, okEnable := cfg.GetNestedValue[bool](config, "enable")
 				if okEnable {
 					enabled = enable_conf
 				} else {
