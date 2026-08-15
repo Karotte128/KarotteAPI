@@ -44,13 +44,3 @@ type Module struct {
 	// This can be used to cleanly disconnect from services connected during Startup().
 	Shutdown func() error
 }
-
-// RequestContext can be used to pass additional information between Middleware and Module.
-type RequestContext struct {
-	// Info is any data that needs to be passed with the request.
-	Info any
-
-	// ContextKey is a unique identifier for the type of the data.
-	// For example, an auth middleware can use "auth" as the key.
-	ContextKey string
-}

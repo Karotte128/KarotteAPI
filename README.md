@@ -129,10 +129,10 @@ Common functions include:
 - `GetMiddlewareConfig(middlewareName)`  
   Retrieves configuration scoped to a specific middleware.
 
-- `SetRequestContext(ctx context.Context, info *karotteapi.RequestContext)`
+- `SetRequestContext(r *http.Request, key string, value any)`
   Sets additional data on the request context.
 
-- `GetRequestContext(ctx context.Context, contextKey string)`
+- `GetRequestContext[T any](r *http.Request, key string) (value T, ok bool)`
   Retrieves additional data from the request context.
 
 All application-level interaction with KarotteAPI should go through this package.

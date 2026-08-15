@@ -1,7 +1,7 @@
 package core
 
 import (
-	"context"
+	"net/http"
 
 	cfg "github.com/karotte128/karottelib/config"
 
@@ -36,12 +36,12 @@ func GetNestedValue[Type any](m karotteapi.Config, path ...string) (Type, bool) 
 
 // This function adds additional info to the request context.
 // It is usually used by a middleware.
-func SetRequestContext(ctx context.Context, info *karotteapi.RequestContext) context.Context {
-	return internal.SetRequestContext(ctx, info)
+func SetRequestContext(r *http.Request, key string, value any) {
+	internal.SetRequestContext(r, key, value)
 }
 
 // This function retrieves the additional info from the request context.
 // It is usually used in a module.
-func GetRequestContext(ctx context.Context, contextKey string) karotteapi.RequestContext {
-	return internal.GetRequestContext(ctx, contextKey)
+func GetRequestContext[T any](r *http.Request, key string) (value T, ok bool) {
+	return internal.GetRequestContext[T](r, key)
 }
