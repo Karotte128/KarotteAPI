@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/karotte128/karotteapi/api"
+	"github.com/karotte128/karotteapi/v2/api"
 )
 
 func health(w http.ResponseWriter, r *http.Request) {

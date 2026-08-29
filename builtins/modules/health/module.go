@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/karotte128/karotteapi/api"
+	"github.com/karotte128/karotteapi/v2/api"
 )
 
 var healthModule = api.Module{

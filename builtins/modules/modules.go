@@ -22,5 +22,5 @@ package modules
 // The core system will pick it up automatically.
 
 import (
-	_ "github.com/karotte128/karotteapi/builtins/modules/health"
+	_ "github.com/karotte128/karotteapi/v2/builtins/modules/health"
 )

@@ -62,15 +62,15 @@ This package is not a dependency, but its usage is highly recommended.
 Add KarotteAPI as a dependency in your project:
 
 ```bash
-go get github.com/Karotte128/KarotteAPI
+go get github.com/Karotte128/KarotteAPI/v2
 ```
 
 Then import the required packages in your code:
 
 ```go
 import (
-    _ "github.com/Karotte128/KarotteAPI/builtins" // Enable builtin middlewares and modules. Highly recommended!
-    "github.com/Karotte128/KarotteAPI/api"
+    _ "github.com/Karotte128/KarotteAPI/v2/builtins" // Enable builtin middlewares and modules. Highly recommended!
+    "github.com/Karotte128/KarotteAPI/v2/api"
 )
 ```
 
@@ -130,7 +130,7 @@ The builtins package contains usefull modules and middlewares.
 To use these, import the module:
 ```go
 import (
-    _ "github.com/Karotte128/KarotteAPI/builtins"
+    _ "github.com/Karotte128/KarotteAPI/v2/builtins"
 )
 ```
 
@@ -165,8 +165,8 @@ import (
     "context"
 
 	"github.com/karotte128/apiutils/config"
-	"github.com/karotte128/karotteapi/api"
-	_ "github.com/karotte128/karotteapi/builtins"
+	"github.com/karotte128/karotteapi/v2/api"
+	_ "github.com/karotte128/karotteapi/v2/builtins"
 )
 
 func main() {

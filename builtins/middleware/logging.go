@@ -7,7 +7,7 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/karotte128/karotteapi/api"
+	"github.com/karotte128/karotteapi/v2/api"
 )
 
 var loggingMiddleware = api.Middleware{
