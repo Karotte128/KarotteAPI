@@ -13,16 +13,12 @@ This README is intended for **developers who want to use KarotteAPI as a depende
 - Requirements
 - Installation
 - Core Packages
-  - karotteapi
   - api
-  - core
+  - builtins
 - Basic Usage
   - Setting up the API server
   - Registering a Module
   - Registering a Middleware
-- Builtins
-  - Modules
-  - Middleware
 - Authentication
 - Configuration
 - License
@@ -73,9 +69,8 @@ Then import the required packages in your code:
 
 ```go
 import (
-    "github.com/Karotte128/KarotteAPI"
+    _ "github.com/Karotte128/KarotteAPI/builtins" // Enable builtin middlewares and modules. Highly recommended!
     "github.com/Karotte128/KarotteAPI/api"
-    "github.com/Karotte128/KarotteAPI/core"
 )
 ```
 
@@ -83,42 +78,34 @@ import (
 
 ## Core Packages
 
-### karotteapi
+### `api`
 
-The `karotteapi` package defines the core interfaces and data structures used by the framework.
+The `api` package contains the supported API surface for interacting with the framework.
 
-Key concepts include:
+Types:
 
-- **Config**
+- `Config`
   Contains the API config as `map[string]any`.
 
-- **Module**  
+- `Module`
   Represents a logical API module that can register routes, handlers, or behavior.
 
-- **Middleware**  
+- `Middleware`
   Interface for request/response middleware components.
 
-- **RequestContext**
-  Allows to pass additional data from middleware to module using the request context.
+- `ModuleStatus`
+  ModuleStatus stores the current status of all registered modules.
 
-These types are intended to be implemented or consumed by your application code.
+Functions:
 
----
-
-### api
-
-The `api` package contains the `InitAPI(karotteapi.Config)` function used to set up and start the API server.
-
----
-
-### core
-
-The `core` package exposes the supported API surface for interacting with the framework.
-
-Common functions include:
+- `InitAPI(api.Config)`
+  Function used to set up and start the API server.
 
 - `RegisterModule(module)`  
   Registers an API module.
+
+- `GetModuleStatus()`
+  Reads the status of all registered modules.
 
 - `RegisterMiddleware(middleware)`  
   Registers a middleware component.
@@ -129,13 +116,36 @@ Common functions include:
 - `GetMiddlewareConfig(middlewareName)`  
   Retrieves configuration scoped to a specific middleware.
 
-- `SetRequestContext(r *http.Request, key string, value any)`
-  Sets additional data on the request context.
-
 - `GetRequestContext[T any](r *http.Request, key string) (value T, ok bool)`
   Retrieves additional data from the request context.
 
+- `SetRequestContext(r *http.Request, key string, value any)`
+  Sets additional data on the request context.
+
 All application-level interaction with KarotteAPI should go through this package.
+
+### `builtins`
+
+The builtins package contains usefull modules and middlewares.
+To use these, import the module:
+```go
+import (
+    _ "github.com/Karotte128/KarotteAPI/builtins"
+)
+```
+
+#### Modules
+
+- `health`
+  Adds the /health endpoint, showing module status.
+
+####
+
+- `contenttype`
+  Automatically sets the `Content-Type` header to `application/json` if it is not set.
+
+- `logging`
+  Adds basic request logging.
 
 ---
 
@@ -143,7 +153,7 @@ All application-level interaction with KarotteAPI should go through this package
 
 ### Setting up the API server
 
-To set up the API server, the `api.InitApi(karotteapi.Config)` function needs to be called with the `Config` as argument.
+To set up the API server, the `api.InitApi(api.Config)` function needs to be called with the `Config` as argument.
 
 The following example shows a simple setup using [Karotte128/APIUtils](https://github.com/karotte128/apiutils).
 
@@ -155,9 +165,8 @@ import (
     "context"
 
 	"github.com/karotte128/apiutils/config"
-	"github.com/karotte128/karotteapi"
 	"github.com/karotte128/karotteapi/api"
-	"github.com/karotte128/karotteapi/core"
+	_ "github.com/karotte128/karotteapi/builtins"
 )
 
 func main() {
@@ -189,7 +198,7 @@ enable = true
 Modules are typically registered during initialization:
 
 ```go
-var exampleModule = karotteapi.Module{ // Create the module info.
+var exampleModule = api.Module{ // Create the module info.
 	Name:     "example", // Name of the module, used for logging.
 	Routes:   routes, // Function that provides the API routes of the module.
 	Startup:  startup, // Function that is executed after the module has been registered. Can be nil if not needed.
@@ -213,7 +222,7 @@ func shutdown() error {
 }
 
 func init() { // init() is used to register the module before the server starts.
-	core.RegisterModule(statusModule) // Add the module to the registry.
+	api.RegisterModule(statusModule) // Add the module to the registry.
 }
 
 func example(w http.ResponseWriter, r *http.Request) { // http handler that handles the request.
@@ -221,14 +230,14 @@ func example(w http.ResponseWriter, r *http.Request) { // http handler that hand
 }
 ```
 
-Your module must implement the appropriate `karotteapi.Module` interface.
+Your module must implement the appropriate `api.Module` interface.
 
 ---
 
 ### Registering a Middleware
 
 ```go
-var exampleMiddleware = karotteapi.Middleware{ // Create the example middleware.
+var exampleMiddleware = api.Middleware{ // Create the example middleware.
 	Name:     "example", // Name of the middleware, used for logging.
 	Handler:  exampleHandler, // Handler function to modify the request.
 	Priority: 10, // Higher number -> gets applied later; lower number -> gets applied earlier.
@@ -245,35 +254,11 @@ func exampleHandler(next http.Handler) http.Handler { // Handler function, retur
 }
 
 func init() { // init() is used to register the middleware before the server starts.
-	core.RegisterMiddleware(exampleMiddleware) // Add the middleware to the registry
+	api.RegisterMiddleware(exampleMiddleware) // Add the middleware to the registry
 }
 ```
 
 Middleware can inspect or modify requests using the provided context.
-
----
-
-## Builtins
-
-### Modules
-
-Currently, there is only the `health` module built in. It returns the health status of the API server.
-
-### Middleware
-
-There are some basic middlewares built in, usefull for easy setup.
-
-- `recovery`:
-  This middleware prevents the API server from crashing if the processing of a request panics.
-  It can not be disabled (`ForceEnable = true`)
-
-- `logging`:
-  This middleware contains a simple request logger, usefull for debugging.
-  It can be disabled in the config.
-
-- `contenttype`
-  This middleware automatically sets the `Content-Type` header to `application/json` if it is not manually set.
-  It can be disabled in the config.
 
 ---
 
@@ -290,7 +275,7 @@ The mechanism (environment variables, files, flags, etc.) is left to the integra
 [Karotte128/APIUtils](https://github.com/karotte128/apiutils) contains a simple to use configuration loader system that is compatible with this API.
 It reads the config from a `.toml` file and replaces `${ENV}` variables dynamically.
 
-Use `core.GetModuleConfig(name)` inside a module to get module-specific configuration.
+Use `api.GetModuleConfig(name)` inside a module to get module-specific configuration.
 
 ---
 

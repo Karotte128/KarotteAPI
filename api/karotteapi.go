@@ -9,21 +9,16 @@ import (
 	"syscall"
 
 	cfg "github.com/karotte128/karottelib/config"
-
-	"github.com/karotte128/karotteapi"
-	_ "github.com/karotte128/karotteapi/builtin/middleware" // automatically loads all middleware via init()
-	_ "github.com/karotte128/karotteapi/builtin/modules"    // automatically loads all modules via init()
-	"github.com/karotte128/karotteapi/internal"
 )
 
 // InitAPI starts the HTTP server, loads all registered modules and middleware,
 // and mounts each module under its prefix.
-func InitAPI(config karotteapi.Config) {
+func InitAPI(config Config) {
 	// Load config
-	internal.LoadConfig(config)
+	loadConfig(config)
 
 	// Get server config
-	serverConfig, serverConfigOk := internal.GetServerConfig()
+	serverConfig, serverConfigOk := getServerConfig()
 	if !serverConfigOk {
 		log.Fatal("[SERVER] No server config!")
 	}
@@ -43,10 +38,10 @@ func InitAPI(config karotteapi.Config) {
 	mux := http.NewServeMux()
 
 	// Load all modules of the module registry.
-	internal.LoadRegisteredModules(mux)
+	loadRegisteredModules(mux)
 
 	// Apply global middleware to the root mux.
-	handler := internal.ApplyRegisteredMiddleware(mux)
+	handler := applyRegisteredMiddleware(mux)
 
 	// listen for shutdown notification
 	ctx, stop := signal.NotifyContext(
@@ -71,5 +66,5 @@ func InitAPI(config karotteapi.Config) {
 
 	log.Println("[SERVER] shutting down...")
 	// shutting down registered modules
-	internal.ShutdownRegisteredModules()
+	shutdownRegisteredModules()
 }

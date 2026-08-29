@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/karotte128/karotteapi/internal"
+	"github.com/karotte128/karotteapi/api"
 )
 
 func health(w http.ResponseWriter, r *http.Request) {
@@ -18,11 +18,11 @@ func health(w http.ResponseWriter, r *http.Request) {
 		FailedModules     int    `json:"failedModules"`
 	}
 
-	status := internal.GetModuleStatus()
+	status := api.GetModuleStatus()
 
 	var apiStatus string
 
-	if status.TotalModules == status.RunningModules+status.DisabledModules {
+	if status.ModuleCount == len(status.RunningModules)+len(status.DisabledModules) {
 		apiStatus = "ok"
 	} else {
 		apiStatus = "degraded"
@@ -30,11 +30,11 @@ func health(w http.ResponseWriter, r *http.Request) {
 
 	req_response := response{
 		ApiStatus:         apiStatus,
-		TotalModules:      status.TotalModules,
-		RegisteredModules: status.RegisteredModules,
-		RunningModules:    status.RunningModules,
-		DisabledModules:   status.DisabledModules,
-		FailedModules:     status.FailedModules,
+		TotalModules:      status.ModuleCount,
+		RegisteredModules: len(status.RegisteredModules),
+		RunningModules:    len(status.RunningModules),
+		DisabledModules:   len(status.DisabledModules),
+		FailedModules:     len(status.FailedModules),
 	}
 
 	json.NewEncoder(w).Encode(req_response)

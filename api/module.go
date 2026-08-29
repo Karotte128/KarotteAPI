@@ -1,12 +1,10 @@
-package internal
+package api
 
 import (
 	"log"
 	"net/http"
 
 	cfg "github.com/karotte128/karottelib/config"
-
-	"github.com/karotte128/karotteapi"
 )
 
 // A module is a component handles requests to an API endpoint.
@@ -20,6 +18,28 @@ import (
 
 // Modules register themselves automatically via init() inside their
 // own package. The core does not need to know about them explicitly.
+
+// Module is the struct the module needs to provide to the module registry to register itself.
+type Module struct {
+	// Name is the name of the module. It is used for logging.
+	Name string
+
+	// Routes returns a URL prefix and an http.Handler that serves all routes
+	// for this module.
+	//
+	// Example:
+	//   prefix = "/example/"
+	//   handler = http.HandlerFunc()
+	Routes func() (prefix string, handler http.Handler)
+
+	// Startup is a function that is run on startup.
+	// This can be used to initialize a connection to external services like databases.
+	Startup func() error
+
+	// Shutdown is a function that is run on shutdown.
+	// This can be used to cleanly disconnect from services connected during Startup().
+	Shutdown func() error
+}
 
 // This is the module status type.
 type status int
@@ -36,7 +56,7 @@ const (
 // It is not public to the modules or the main package. It is only for use in core.
 type registryModule struct {
 	// module contains the data provided by the registering module
-	module karotteapi.Module
+	module Module
 
 	// status is the current status of the module.
 	status status
@@ -47,7 +67,7 @@ var module_registry []registryModule
 
 // RegisterModule adds a module to the global registry.
 // Typically called from an init() function inside each module package.
-func RegisterModule(module karotteapi.Module) {
+func RegisterModule(module Module) {
 	// Structured data for the module registry
 	var reg_mod = registryModule{
 		module: module,
@@ -59,7 +79,7 @@ func RegisterModule(module karotteapi.Module) {
 }
 
 // LoadRegisteredModules loads and starts all modules that registered themselves via init()
-func LoadRegisteredModules(mux *http.ServeMux) {
+func loadRegisteredModules(mux *http.ServeMux) {
 
 	// Register and start all modules in the module_registry
 	for i, reg_mod := range module_registry {
@@ -123,7 +143,7 @@ func LoadRegisteredModules(mux *http.ServeMux) {
 }
 
 // ShutdownRegisteredModules shuts down all modules that are running.
-func ShutdownRegisteredModules() {
+func shutdownRegisteredModules() {
 	for _, reg_mod := range module_registry {
 		if reg_mod.status == statusRunning {
 			safeShutdownModule(reg_mod.module)
@@ -133,7 +153,7 @@ func ShutdownRegisteredModules() {
 
 // safeShutdownModule is a function that attempts to execute the shutdown function of a module.
 // It makes sure that a panic in the shutdown function does not crash the server.
-func safeShutdownModule(module karotteapi.Module) {
+func safeShutdownModule(module Module) {
 	// only execute if the module implements a shutdown function
 	if module.Shutdown != nil {
 		// recover from panic
@@ -155,7 +175,7 @@ func safeShutdownModule(module karotteapi.Module) {
 // safeStartModule is a function that attempts to execute the startup function of a module.
 // It returns true if the startup is successfull or the module does not provide a startup function.
 // It makes sure that a panic in the startup function does not crash the server.
-func safeStartModule(module karotteapi.Module) bool {
+func safeStartModule(module Module) bool {
 	var ok bool = true
 
 	// only execute if the module implements a startup function
@@ -185,44 +205,33 @@ func safeStartModule(module karotteapi.Module) bool {
 }
 
 type ModuleStatus struct {
-	TotalModules      int
-	RegisteredModules int
-	RunningModules    int
-	DisabledModules   int
-	FailedModules     int
+	ModuleCount       int
+	RegisteredModules []string
+	RunningModules    []string
+	DisabledModules   []string
+	FailedModules     []string
 }
 
 func GetModuleStatus() ModuleStatus {
-	var total int
-	var registered int
-	var running int
-	var disabled int
-	var failed int
+	var status ModuleStatus
 
 	for _, module := range module_registry {
-
-		total++
-
 		switch module.status {
 		case statusRegistered:
-			registered++
+			status.RegisteredModules = append(status.RegisteredModules, module.module.Name)
 
 		case statusRunning:
-			running++
+			status.RunningModules = append(status.RunningModules, module.module.Name)
 
 		case statusDisabled:
-			disabled++
+			status.DisabledModules = append(status.DisabledModules, module.module.Name)
 
 		case statusFailed:
-			failed++
+			status.FailedModules = append(status.FailedModules, module.module.Name)
 		}
 	}
 
-	return ModuleStatus{
-		TotalModules:      total,
-		RegisteredModules: registered,
-		RunningModules:    running,
-		DisabledModules:   disabled,
-		FailedModules:     failed,
-	}
+	status.ModuleCount = len(module_registry)
+
+	return status
 }

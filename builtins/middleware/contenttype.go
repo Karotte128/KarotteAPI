@@ -3,11 +3,10 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/karotte128/karotteapi"
-	"github.com/karotte128/karotteapi/core"
+	"github.com/karotte128/karotteapi/api"
 )
 
-var contentTypeMiddleware = karotteapi.Middleware{
+var contentTypeMiddleware = api.Middleware{
 	Name:        "contentType",
 	Handler:     contentTypeHandler,
 	Priority:    2,
@@ -24,5 +23,5 @@ func contentTypeHandler(next http.Handler) http.Handler {
 }
 
 func init() {
-	core.RegisterMiddleware(contentTypeMiddleware)
+	api.RegisterMiddleware(contentTypeMiddleware)
 }

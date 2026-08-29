@@ -7,11 +7,10 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/karotte128/karotteapi"
-	"github.com/karotte128/karotteapi/core"
+	"github.com/karotte128/karotteapi/api"
 )
 
-var loggingMiddleware = karotteapi.Middleware{
+var loggingMiddleware = api.Middleware{
 	Name:        "logging",
 	Handler:     loggingHandler,
 	Priority:    1,
@@ -76,5 +75,5 @@ func loggingHandler(next http.Handler) http.Handler {
 
 // Automatically register this middleware globally
 func init() {
-	core.RegisterMiddleware(loggingMiddleware)
+	api.RegisterMiddleware(loggingMiddleware)
 }

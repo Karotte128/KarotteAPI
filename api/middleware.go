@@ -1,4 +1,4 @@
-package internal
+package api
 
 import (
 	"log"
@@ -6,9 +6,25 @@ import (
 	"sort"
 
 	cfg "github.com/karotte128/karottelib/config"
-
-	"github.com/karotte128/karotteapi"
 )
+
+// Middleware is the struct the middleware needs to provide to the middleware registry to register itself.
+type Middleware struct {
+	// Name is the name of the middleware. It is used for logging.
+	Name string
+
+	// Priority is the order in which middlewares should be registered.
+	// Lower number means the middleware gets registered earlier (higher priority).
+	Priority uint
+
+	// Middleware can be force enabled by setting this value to true.
+	// This means the config "enable" value is ignored for this middleware.
+	// Only use this if the middleware is absolutely necessary.
+	ForceEnable bool
+
+	// Handler is the http.Handler of the middleware.
+	Handler func(http.Handler) (handler http.Handler)
+}
 
 // Middleware is a function that wraps an http.Handler and returns a new one.
 // This allows transforming the request/response pipeline.
@@ -23,22 +39,17 @@ import (
 
 // registry stores all registered middleware, in order of registration.
 // Middlewares are applied in the same order they were added.
-var middleware_registry []karotteapi.Middleware
+var middleware_registry []Middleware
 
 // RegisterMiddleware registers a new global middleware.
 // Usually called from init() inside a middleware package.
-func RegisterMiddleware(middleware karotteapi.Middleware) {
+func RegisterMiddleware(middleware Middleware) {
 	middleware_registry = append(middleware_registry, middleware)
-}
-
-// Middlewares returns all registered middleware.
-func GetMiddlewares() []karotteapi.Middleware {
-	return middleware_registry
 }
 
 // ApplyRegisteredMiddleware wraps the given handler with all registered
 // middleware functions in registration order.
-func ApplyRegisteredMiddleware(h http.Handler) http.Handler {
+func applyRegisteredMiddleware(h http.Handler) http.Handler {
 	sort.Slice(middleware_registry, func(i, j int) bool {
 		return middleware_registry[i].Priority < middleware_registry[j].Priority
 	})

@@ -4,11 +4,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/karotte128/karotteapi"
-	"github.com/karotte128/karotteapi/core"
+	"github.com/karotte128/karotteapi/api"
 )
 
-var healthModule = karotteapi.Module{
+var healthModule = api.Module{
 	Name:     "health",
 	Routes:   routes,
 	Startup:  startup,
@@ -32,5 +31,5 @@ func shutdown() error {
 }
 
 func init() {
-	core.RegisterModule(healthModule)
+	api.RegisterModule(healthModule)
 }
