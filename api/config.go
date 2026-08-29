@@ -10,6 +10,7 @@ type Config map[string]any
 // Global config instance
 var config Config
 
+// loadConfig sets the global config instance.
 func loadConfig(conf Config) {
 	config = conf
 }

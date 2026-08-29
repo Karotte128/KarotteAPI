@@ -63,7 +63,7 @@ type registryModule struct {
 }
 
 // registry holds all globally registered modules.
-var module_registry []registryModule
+var moduleRegistry []registryModule
 
 // RegisterModule adds a module to the global registry.
 // Typically called from an init() function inside each module package.
@@ -75,14 +75,14 @@ func RegisterModule(module Module) {
 	}
 
 	// add module to registry
-	module_registry = append(module_registry, reg_mod)
+	moduleRegistry = append(moduleRegistry, reg_mod)
 }
 
 // LoadRegisteredModules loads and starts all modules that registered themselves via init()
 func loadRegisteredModules(mux *http.ServeMux) {
 
-	// Register and start all modules in the module_registry
-	for i, reg_mod := range module_registry {
+	// Register and start all modules in the moduleRegistry
+	for i, reg_mod := range moduleRegistry {
 		var modStatus status
 		var enabled bool = false
 
@@ -138,13 +138,13 @@ func loadRegisteredModules(mux *http.ServeMux) {
 			modStatus = statusDisabled
 		}
 
-		module_registry[i].status = modStatus
+		moduleRegistry[i].status = modStatus
 	}
 }
 
 // ShutdownRegisteredModules shuts down all modules that are running.
 func shutdownRegisteredModules() {
-	for _, reg_mod := range module_registry {
+	for _, reg_mod := range moduleRegistry {
 		if reg_mod.status == statusRunning {
 			safeShutdownModule(reg_mod.module)
 		}
@@ -204,6 +204,8 @@ func safeStartModule(module Module) bool {
 	}
 }
 
+// ModuleStatus holds status information about all registered modules.
+// It contains lists of modules, sorted by status type.
 type ModuleStatus struct {
 	ModuleCount       int
 	RegisteredModules []string
@@ -212,10 +214,12 @@ type ModuleStatus struct {
 	FailedModules     []string
 }
 
+// GetModuleStatus queries the moduleRegistry and returns a ModuleStatus of all registered modules.
+// This can be used by external monitoring tools or by modules (like builtins/health)
 func GetModuleStatus() ModuleStatus {
 	var status ModuleStatus
 
-	for _, module := range module_registry {
+	for _, module := range moduleRegistry {
 		switch module.status {
 		case statusRegistered:
 			status.RegisteredModules = append(status.RegisteredModules, module.module.Name)
@@ -231,7 +235,8 @@ func GetModuleStatus() ModuleStatus {
 		}
 	}
 
-	status.ModuleCount = len(module_registry)
+	// ModuleCount is the total amount of registered modules.
+	status.ModuleCount = len(moduleRegistry)
 
 	return status
 }

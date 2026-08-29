@@ -16,6 +16,8 @@ func SetRequestContext(r *http.Request, key string, value any) {
 // It is usually used in a module.
 func GetRequestContext[T any](r *http.Request, key string) (value T, ok bool) {
 	v := r.Context().Value(key)
+
+	// Perform a nil check, returns false if key is not set.
 	if v == nil {
 		// Context key not found
 		var zero T
