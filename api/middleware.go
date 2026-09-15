@@ -1,6 +1,8 @@
 package api
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"sort"
@@ -49,7 +51,7 @@ func RegisterMiddleware(middleware Middleware) {
 
 // ApplyRegisteredMiddleware wraps the given handler with all registered
 // middleware functions, ordered by priority.
-func applyRegisteredMiddleware(h http.Handler) http.Handler {
+func applyRegisteredMiddleware(h http.Handler, ignoreErrors bool) (http.Handler, error) {
 	// Sort the registered middlewares by priority
 	sort.Slice(middlewareRegistry, func(i, j int) bool {
 		return middlewareRegistry[i].Priority < middlewareRegistry[j].Priority
@@ -63,30 +65,45 @@ func applyRegisteredMiddleware(h http.Handler) http.Handler {
 		if middleware.ForceEnable {
 			enabled = true
 		} else {
-			// Get enable value from config.
+			// Attempt to load middleware config.
 			config, okConfig := GetMiddlewareConfig(middleware.Name)
-			if okConfig {
-				enable_conf, okEnable := cfg.GetNestedValue[bool](config, "enable")
-				if okEnable {
-					enabled = enable_conf
-				} else {
-					// The config has no enable value.
-					log.Printf("[MIDDLEWARE] %s has no enable value in config!", middleware.Name)
+			if !okConfig {
+				fErr := fmt.Sprintf("[MIDDLEWARE] %s has no config!", middleware.Name)
+				log.Println(fErr)
+
+				if !ignoreErrors {
+					return nil, errors.New(fErr)
 				}
-			} else {
-				// The module has no config entry.
-				log.Printf("[MIDDLEWARE] %s has no config!", middleware.Name)
+
+				break
 			}
+
+			// Get enable value from config.
+			enable_conf, okEnable := cfg.GetNestedValue[bool](config, "enable")
+			if !okEnable {
+				fErr := fmt.Sprintf("[MIDDLEWARE] %s has no enable value in config!", middleware.Name)
+				log.Println(fErr)
+
+				if !ignoreErrors {
+					return nil, errors.New(fErr)
+				}
+
+				break
+			}
+
+			enabled = enable_conf
 		}
 
-		if enabled {
-			// Enable the middleware.
-			h = middleware.Handler(h)
-			log.Printf("[MIDDLEWARE] %s was applied!", middleware.Name)
-		} else {
-			// Middleware is disabled.
+		// Skip further processing if middleware is disabled.
+		if !enabled {
 			log.Printf("[MIDDLEWARE] %s is disabled.", middleware.Name)
+			break
 		}
+
+		// Enable the middleware.
+		h = middleware.Handler(h)
+		log.Printf("[MIDDLEWARE] %s was applied!", middleware.Name)
 	}
-	return h
+
+	return h, nil
 }

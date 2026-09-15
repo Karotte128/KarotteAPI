@@ -50,7 +50,10 @@ func InitAPI(config Config) {
 	}
 
 	// Apply global middleware to the root mux.
-	handler := applyRegisteredMiddleware(mux)
+	handler, err := applyRegisteredMiddleware(mux, ignoreStartupErrors)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// listen for shutdown notification
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
