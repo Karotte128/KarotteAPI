@@ -10,12 +10,11 @@ import (
 func health(w http.ResponseWriter, r *http.Request) {
 
 	type response struct {
-		ApiStatus         string `json:"apiStatus"`
-		TotalModules      int    `json:"totalModules"`
-		RegisteredModules int    `json:"registeredModules"`
-		RunningModules    int    `json:"runningModules"`
-		DisabledModules   int    `json:"disabledModules"`
-		FailedModules     int    `json:"failedModules"`
+		ApiStatus       string `json:"apiStatus"`
+		TotalModules    int    `json:"totalModules"`
+		RunningModules  int    `json:"runningModules"`
+		DisabledModules int    `json:"disabledModules"`
+		FailedModules   int    `json:"failedModules"`
 	}
 
 	status := api.GetModuleStatus()
@@ -29,12 +28,11 @@ func health(w http.ResponseWriter, r *http.Request) {
 	}
 
 	req_response := response{
-		ApiStatus:         apiStatus,
-		TotalModules:      status.ModuleCount,
-		RegisteredModules: len(status.RegisteredModules),
-		RunningModules:    len(status.RunningModules),
-		DisabledModules:   len(status.DisabledModules),
-		FailedModules:     len(status.FailedModules),
+		ApiStatus:       apiStatus,
+		TotalModules:    status.ModuleCount,
+		RunningModules:  len(status.RunningModules),
+		DisabledModules: len(status.DisabledModules),
+		FailedModules:   len(status.FailedModules),
 	}
 
 	json.NewEncoder(w).Encode(req_response)
