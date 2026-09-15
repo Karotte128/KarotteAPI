@@ -34,21 +34,26 @@ func InitAPI(config Config) {
 		log.Fatal("[SERVER] address is not configured!")
 	}
 
+	// Get ignoreStartupErrors
+	ignoreStartupErrors, iseOk := cfg.GetNestedValue[bool](serverConfig, "ignoreStartupErrors")
+	if !iseOk {
+		log.Fatal("[SERVER] No server ignoreStartupErrors config!")
+	}
+
 	// A multiplexer to route module-specific handlers.
 	mux := http.NewServeMux()
 
 	// Load all modules of the module registry.
-	loadRegisteredModules(mux)
+	err := loadRegisteredModules(mux, ignoreStartupErrors)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Apply global middleware to the root mux.
 	handler := applyRegisteredMiddleware(mux)
 
 	// listen for shutdown notification
-	ctx, stop := signal.NotifyContext(
-		context.Background(),
-		os.Interrupt,
-		syscall.SIGTERM,
-	)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	// start http server

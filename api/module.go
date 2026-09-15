@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -43,9 +44,6 @@ type Module struct {
 	Shutdown func() error
 }
 
-// Registry holds all globally registered modules.
-var moduleRegistry []Module
-
 // ModuleStatus holds status information about all registered modules.
 // It contains lists of modules, sorted by status type.
 type ModuleStatus struct {
@@ -55,6 +53,10 @@ type ModuleStatus struct {
 	FailedModules   []string
 }
 
+// moduleRegistry holds all globally registered modules.
+var moduleRegistry []Module
+
+// moduleStatus contains the status value of all modules.
 var moduleStatus ModuleStatus
 
 // RegisterModule adds a module to the global registry.
@@ -65,14 +67,21 @@ func RegisterModule(module Module) {
 }
 
 // LoadRegisteredModules loads and starts all modules that registered themselves via init()
-func loadRegisteredModules(mux *http.ServeMux) {
+func loadRegisteredModules(mux *http.ServeMux, ignoreErrors bool) error {
 	for _, module := range moduleRegistry {
 		// attempt to load module config
 		config, okConfig := GetModuleConfig(module.Name)
 		if !okConfig {
 			// Failed to load module config
 			moduleStatus.FailedModules = append(moduleStatus.FailedModules, module.Name)
-			log.Printf("[MODULE] %s has no config!", module.Name)
+
+			fErr := fmt.Sprintf("[MODULE] %s has no config!", module.Name)
+			log.Println(fErr)
+
+			if !ignoreErrors {
+				return errors.New(fErr)
+			}
+
 			break
 		}
 
@@ -81,10 +90,18 @@ func loadRegisteredModules(mux *http.ServeMux) {
 		if !okEnable {
 			// The config has no enable value.
 			moduleStatus.FailedModules = append(moduleStatus.FailedModules, module.Name)
-			log.Printf("[MODULE] %s has no enable value in config!", module.Name)
+
+			fErr := fmt.Sprintf("[MODULE] %s has no enable value in config!", module.Name)
+			log.Println(fErr)
+
+			if !ignoreErrors {
+				return errors.New(fErr)
+			}
+
 			break
 		}
 
+		// Skip further processing if module is disabled
 		if !enable {
 			// Module is disabled
 			moduleStatus.DisabledModules = append(moduleStatus.DisabledModules, module.Name)
@@ -92,11 +109,16 @@ func loadRegisteredModules(mux *http.ServeMux) {
 			break
 		}
 
-		// Module is running
+		// Check if module has Routes() set
 		if module.Routes != nil {
-			// Module has Routes() not set
 			moduleStatus.FailedModules = append(moduleStatus.FailedModules, module.Name)
-			log.Printf("[MODULE] %s has no routes!", module.Name)
+			fErr := fmt.Sprintf("[MODULE] %s has no routes!", module.Name)
+			log.Println(fErr)
+
+			if !ignoreErrors {
+				return errors.New(fErr)
+			}
+
 			break
 		}
 
@@ -106,6 +128,11 @@ func loadRegisteredModules(mux *http.ServeMux) {
 			// Error or panic occured while trying to start module
 			moduleStatus.FailedModules = append(moduleStatus.FailedModules, module.Name)
 			log.Println(startErr)
+
+			if !ignoreErrors {
+				return startErr
+			}
+
 			break
 		}
 
@@ -115,6 +142,8 @@ func loadRegisteredModules(mux *http.ServeMux) {
 		mux.Handle(prefix, handler)
 		moduleStatus.RunningModules = append(moduleStatus.RunningModules, module.Name)
 	}
+
+	return nil
 }
 
 // ShutdownRegisteredModules shuts down all modules that are running.

@@ -1,5 +1,6 @@
 [server]
 address = "${ADDR:-:8080}"
+ignoreStartupErrors = false
 
 [modules.health]
 enable = true
