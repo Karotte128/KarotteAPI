@@ -1,4 +1,4 @@
-module github.com/karotte128/karotteapi/v2
+module github.com/karotte128/karotteapi/v3
 
 go 1.26.4
 

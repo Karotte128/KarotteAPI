@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/karotte128/karotteapi/v2/api"
+	"github.com/karotte128/karotteapi/v3/api"
 )
 
 var contentTypeMiddleware = api.Middleware{
