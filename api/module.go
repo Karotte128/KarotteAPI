@@ -110,7 +110,7 @@ func loadRegisteredModules(mux *http.ServeMux, ignoreErrors bool) error {
 		}
 
 		// Check if module has Routes() set
-		if module.Routes != nil {
+		if module.Routes == nil {
 			moduleStatus.FailedModules = append(moduleStatus.FailedModules, module.Name)
 			fErr := fmt.Sprintf("[MODULE] %s has no routes!", module.Name)
 			log.Println(fErr)

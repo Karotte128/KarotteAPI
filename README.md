@@ -98,22 +98,22 @@ Types:
 
 Functions:
 
-- `InitAPI(api.Config)`
+- `RunAPI(Config)`
   Function used to set up and start the API server.
 
-- `RegisterModule(module)`  
+- `RegisterModule(Module)`
   Registers an API module.
 
 - `GetModuleStatus()`
   Reads the status of all registered modules.
 
-- `RegisterMiddleware(middleware)`  
+- `RegisterMiddleware(Middleware)`
   Registers a middleware component.
 
-- `GetModuleConfig(moduleName)`  
+- `GetModuleConfig(moduleName)`
   Retrieves configuration scoped to a specific module.
 
-- `GetMiddlewareConfig(middlewareName)`  
+- `GetMiddlewareConfig(middlewareName)`
   Retrieves configuration scoped to a specific middleware.
 
 - `GetRequestContext[T any](r *http.Request, key string) (value T, ok bool)`
@@ -139,7 +139,7 @@ import (
 - `health`
   Adds the /health endpoint, showing module status.
 
-####
+#### Middlewares
 
 - `contenttype`
   Automatically sets the `Content-Type` header to `application/json` if it is not set.
@@ -153,7 +153,7 @@ import (
 
 ### Setting up the API server
 
-To set up the API server, the `api.InitApi(api.Config)` function needs to be called with the `Config` as argument.
+To set up the API server, the `api.RunApi(Context, api.Config)` function needs to be called with the `Config` as argument.
 
 The following example shows a simple setup using [Karotte128/APIUtils](https://github.com/karotte128/apiutils).
 
@@ -161,8 +161,11 @@ The following example shows a simple setup using [Karotte128/APIUtils](https://g
 package main
 
 import (
+	"context"
 	"log"
-    "context"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/karotte128/apiutils/config"
 	"github.com/karotte128/karotteapi/v2/api"
@@ -177,7 +180,13 @@ func main() {
 
 	conf := config.ExpandEnvConfig(rawConf) // Replace ENV vars in the config (APIUtils)
 
-	api.InitAPI(conf) // Start the API server.
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	err := api.RunAPI(ctx, conf) // Start the API server.
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 ```
 
@@ -186,6 +195,7 @@ The config.toml for this example contains:
 ```toml
 [server]
 address = "${ADDR:-:8080}"
+ignoreStartupErrors = false
 
 [modules.health]
 enable = true
@@ -242,6 +252,8 @@ var exampleMiddleware = api.Middleware{ // Create the example middleware.
 	Handler:  exampleHandler, // Handler function to modify the request.
 	Priority: 10, // Higher number -> gets applied later; lower number -> gets applied earlier.
 	ForceEnable: false, // If enabled, the enable value in the middleware config is ignored. Only use on necessary middlewares.
+	Startup:  startup, // Function that is executed after the middleware has been applied. Can be nil if not needed.
+	Shutdown: shutdown, // Function that is executed before the server shuts down. Can be nil if not needed.
 }
 
 func exampleHandler(next http.Handler) http.Handler { // Handler function, returns the new (modified) handler.
@@ -251,6 +263,16 @@ func exampleHandler(next http.Handler) http.Handler { // Handler function, retur
 
 		next.ServeHTTP(w, r) // Serve the next handler in the chain.
 	})
+}
+
+func startup() error {
+	log.Println("[MIDDLEWARE] Starting the example middleware!")
+	return nil // Return nil (no error).
+}
+
+func shutdown() error {
+	log.Println("[MIDDLEWARE] Shutting down the example middleware!")
+	return nil // Return nil (no error).
 }
 
 func init() { // init() is used to register the middleware before the server starts.

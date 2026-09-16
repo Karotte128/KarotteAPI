@@ -11,6 +11,8 @@ var contentTypeMiddleware = api.Middleware{
 	Handler:     contentTypeHandler,
 	Priority:    2,
 	ForceEnable: false,
+	Startup:     nil,
+	Shutdown:    nil,
 }
 
 func contentTypeHandler(next http.Handler) http.Handler {

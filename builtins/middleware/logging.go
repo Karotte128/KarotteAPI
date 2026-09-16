@@ -15,6 +15,8 @@ var loggingMiddleware = api.Middleware{
 	Handler:     loggingHandler,
 	Priority:    1,
 	ForceEnable: false,
+	Startup:     nil,
+	Shutdown:    nil,
 }
 
 // loggingResponseWriter wraps http.ResponseWriter so we can capture

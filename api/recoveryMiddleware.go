@@ -14,6 +14,8 @@ var recoveryMiddleware = Middleware{
 	Handler:     recoveryHandler,
 	Priority:    0,
 	ForceEnable: true,
+	Startup:     nil,
+	Shutdown:    nil,
 }
 
 func recoveryHandler(next http.Handler) http.Handler {

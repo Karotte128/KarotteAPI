@@ -2,42 +2,40 @@ package api
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 
 	cfg "github.com/karotte128/karottelib/config"
 )
 
 // InitAPI starts the HTTP server, loads all registered modules and middleware,
 // and mounts each module under its prefix.
-func InitAPI(config Config) {
+func RunAPI(ctx context.Context, config Config) error {
 	// Load config
 	loadConfig(config)
 
 	// Get server config
 	serverConfig, serverConfigOk := getServerConfig()
 	if !serverConfigOk {
-		log.Fatal("[SERVER] No server config!")
+		return errors.New("[SERVER] No server config!")
 	}
 
 	// Get server address
 	addr, addrOk := cfg.GetNestedValue[string](serverConfig, "address")
 	if !addrOk {
-		log.Fatal("[SERVER] No server address config!")
+		return errors.New("[SERVER] No server address config!")
 	}
 
-	// check if address has no value
 	if addr == "" {
-		log.Fatal("[SERVER] address is not configured!")
+		return errors.New("[SERVER] address is not configured!")
 	}
 
 	// Get ignoreStartupErrors
 	ignoreStartupErrors, iseOk := cfg.GetNestedValue[bool](serverConfig, "ignoreStartupErrors")
 	if !iseOk {
-		log.Fatal("[SERVER] No server ignoreStartupErrors config!")
+		return errors.New("[SERVER] No server ignoreStartupErrors config!")
 	}
 
 	// A multiplexer to route module-specific handlers.
@@ -46,33 +44,52 @@ func InitAPI(config Config) {
 	// Load all modules of the module registry.
 	err := loadRegisteredModules(mux, ignoreStartupErrors)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	// Apply global middleware to the root mux.
-	handler, err := applyRegisteredMiddleware(mux, ignoreStartupErrors)
+	// Apply global middlewares to the root mux.
+	handler, err := applyRegisteredMiddlewares(mux, ignoreStartupErrors)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	// listen for shutdown notification
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
+	server := &http.Server{
+		Addr:    addr,
+		Handler: handler,
+	}
 
-	// start http server
+	// Channel for the HTTP server to report errors.
+	serverErr := make(chan error, 1)
+
+	// Start the server
 	go func() {
 		log.Printf("[SERVER] running on %s", addr)
-		err := http.ListenAndServe(addr, handler)
 
-		if err != nil {
-			log.Fatalf("[SERVER] error: %v", err)
+		err := server.ListenAndServe()
+
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			serverErr <- err
 		}
 	}()
 
-	// shutdown triggered
-	<-ctx.Done()
+	// Wait for either:
+	// 1. The server to fail
+	// 2. The parent context to be cancelled
+	select {
+	case err := <-serverErr:
+		return fmt.Errorf("[SERVER] server error: %w", err)
 
-	log.Println("[SERVER] shutting down...")
-	// shutting down registered modules
-	shutdownRegisteredModules()
+	case <-ctx.Done():
+		log.Println("[SERVER] shutting down...")
+
+		if err := server.Shutdown(context.Background()); err != nil {
+			return err
+		}
+
+		shutdownRegisteredModules()
+
+		log.Println("[SERVER] Done shutting down!")
+
+		return nil
+	}
 }

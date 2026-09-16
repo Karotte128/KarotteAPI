@@ -37,6 +37,14 @@ type Middleware struct {
 
 	// Handler is the http.Handler of the middleware.
 	Handler func(http.Handler) (handler http.Handler)
+
+	// Startup is a function that is run on startup.
+	// This can be used to initialize a connection to external services like databases.
+	Startup func() error
+
+	// Shutdown is a function that is run on shutdown.
+	// This can be used to cleanly disconnect from services connected during startup.
+	Shutdown func() error
 }
 
 // middlewareRegistry stores all registered middleware, in order of registration.
@@ -51,7 +59,7 @@ func RegisterMiddleware(middleware Middleware) {
 
 // ApplyRegisteredMiddleware wraps the given handler with all registered
 // middleware functions, ordered by priority.
-func applyRegisteredMiddleware(h http.Handler, ignoreErrors bool) (http.Handler, error) {
+func applyRegisteredMiddlewares(h http.Handler, ignoreErrors bool) (http.Handler, error) {
 	// Sort the registered middlewares by priority
 	sort.Slice(middlewareRegistry, func(i, j int) bool {
 		return middlewareRegistry[i].Priority < middlewareRegistry[j].Priority
@@ -100,10 +108,79 @@ func applyRegisteredMiddleware(h http.Handler, ignoreErrors bool) (http.Handler,
 			break
 		}
 
+		err := safeStartmiddleware(middleware)
+		if err != nil {
+			log.Println(err)
+
+			if !ignoreErrors || middleware.ForceEnable {
+				return nil, err
+			}
+
+			break
+		}
+
 		// Enable the middleware.
 		h = middleware.Handler(h)
 		log.Printf("[MIDDLEWARE] %s was applied!", middleware.Name)
 	}
 
 	return h, nil
+}
+
+// ShutdownRegisteredMiddlewares shuts down all middlewares.
+func shutdownRegisteredMiddlewares() {
+	for _, middleware := range middlewareRegistry {
+		err := safeShutdownMiddleware(middleware)
+		if err != nil {
+			// Error or panic occured while trying to shutdown middleware
+			log.Println(err)
+			break
+		}
+	}
+}
+
+// safeShutdownMiddleware is a function that attempts to execute the shutdown function of a middleware.
+// It returns nil if the shutdown is successfull or the middleware does not provide a shutdown function.
+// It makes sure that a panic in the shutdown function does not crash the server.
+func safeShutdownMiddleware(middleware Middleware) (err error) {
+	// return immediately if shutdown is not needed.
+	if middleware.Shutdown == nil {
+		return nil
+	}
+
+	// recover panic
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("[MIDDLEWARE] %s panicked during shutdown: %v", middleware.Name, r)
+		}
+	}()
+
+	if startupErr := middleware.Shutdown(); startupErr != nil {
+		return fmt.Errorf("[MIDDLEWARE] %s failed shutdown: %w", middleware.Name, startupErr)
+	}
+
+	return nil
+}
+
+// safeStartMiddleware is a function that attempts to execute the startup function of a middleware.
+// It returns nil if the startup is successfull or the middleware does not provide a startup function.
+// It makes sure that a panic in the startup function does not crash the server.
+func safeStartmiddleware(middleware Middleware) (err error) {
+	// return immediately if startup is not needed.
+	if middleware.Startup == nil {
+		return nil
+	}
+
+	// recover panic
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("[MIDDLEWARE] %s panicked during startup: %v", middleware.Name, r)
+		}
+	}()
+
+	if startupErr := middleware.Startup(); startupErr != nil {
+		return fmt.Errorf("[MIDDLEWARE] %s failed startup: %w", middleware.Name, startupErr)
+	}
+
+	return nil
 }
