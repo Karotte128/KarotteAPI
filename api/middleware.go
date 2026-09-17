@@ -83,7 +83,7 @@ func applyRegisteredMiddlewares(h http.Handler, ignoreErrors bool) (http.Handler
 					return nil, errors.New(fErr)
 				}
 
-				break
+				continue
 			}
 
 			// Get enable value from config.
@@ -96,7 +96,7 @@ func applyRegisteredMiddlewares(h http.Handler, ignoreErrors bool) (http.Handler
 					return nil, errors.New(fErr)
 				}
 
-				break
+				continue
 			}
 
 			enabled = enable_conf
@@ -105,7 +105,7 @@ func applyRegisteredMiddlewares(h http.Handler, ignoreErrors bool) (http.Handler
 		// Skip further processing if middleware is disabled.
 		if !enabled {
 			log.Printf("[MIDDLEWARE] %s is disabled.", middleware.Name)
-			break
+			continue
 		}
 
 		err := safeStartmiddleware(middleware)
@@ -116,7 +116,7 @@ func applyRegisteredMiddlewares(h http.Handler, ignoreErrors bool) (http.Handler
 				return nil, err
 			}
 
-			break
+			continue
 		}
 
 		// Enable the middleware.
@@ -134,7 +134,7 @@ func shutdownRegisteredMiddlewares() {
 		if err != nil {
 			// Error or panic occured while trying to shutdown middleware
 			log.Println(err)
-			break
+			continue
 		}
 	}
 }

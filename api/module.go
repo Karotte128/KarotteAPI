@@ -82,7 +82,7 @@ func loadRegisteredModules(mux *http.ServeMux, ignoreErrors bool) error {
 				return errors.New(fErr)
 			}
 
-			break
+			continue
 		}
 
 		// get module config enabled
@@ -98,7 +98,7 @@ func loadRegisteredModules(mux *http.ServeMux, ignoreErrors bool) error {
 				return errors.New(fErr)
 			}
 
-			break
+			continue
 		}
 
 		// Skip further processing if module is disabled
@@ -106,7 +106,7 @@ func loadRegisteredModules(mux *http.ServeMux, ignoreErrors bool) error {
 			// Module is disabled
 			moduleStatus.DisabledModules = append(moduleStatus.DisabledModules, module.Name)
 			log.Printf("[MODULE] %s is disabled.", module.Name)
-			break
+			continue
 		}
 
 		// Check if module has Routes() set
@@ -119,7 +119,7 @@ func loadRegisteredModules(mux *http.ServeMux, ignoreErrors bool) error {
 				return errors.New(fErr)
 			}
 
-			break
+			continue
 		}
 
 		// Try to start module
@@ -133,7 +133,7 @@ func loadRegisteredModules(mux *http.ServeMux, ignoreErrors bool) error {
 				return startErr
 			}
 
-			break
+			continue
 		}
 
 		// Module successfully started, registering now.
@@ -155,7 +155,7 @@ func shutdownRegisteredModules() {
 			if err != nil {
 				// Error or panic occured while trying to shutdown module
 				log.Println(err)
-				break
+				continue
 			}
 		}
 	}
