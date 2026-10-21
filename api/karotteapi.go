@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	cfg "github.com/karotte128/karottelib/config"
 )
@@ -82,11 +83,14 @@ func RunAPI(ctx context.Context, config Config) error {
 	case <-ctx.Done():
 		log.Println("[SERVER] shutting down...")
 
-		if err := server.Shutdown(context.Background()); err != nil {
+		shutdownRegisteredModules()
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := server.Shutdown(ctx); err != nil {
 			return err
 		}
-
-		shutdownRegisteredModules()
 
 		log.Println("[SERVER] Done shutting down!")
 
